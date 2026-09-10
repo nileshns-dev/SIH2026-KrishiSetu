@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KrishiSetu - Agricultural Procurement & Queue Management</title>
+  <meta name="description" content="Smart agricultural procurement, slot booking, real-time queue management and DBT payment tracking platform for farmers and procurement centres." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+Gujarati:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700;800&family=Noto+Sans+Telugu:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            beige: {
+              50: '#FDFBF7',
+              100: '#F5F2EB',
+              200: '#E6E0D4',
+              300: '#D5CCBD',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans Tamil', 'Noto Sans Devanagari', 'Noto Sans Gujarati', 'Noto Sans Telugu', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #F5F2EB;
+      color: #1C1917;
+      font-family: 'Inter', 'Noto Sans Tamil', 'Noto Sans Devanagari', 'Noto Sans Gujarati', 'Noto Sans Telugu', system-ui, sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      margin: 0;
+      padding: 0;
+    }
+
+    .slide-up {
+      animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ticket-cutout {
+      position: relative;
+    }
+    .ticket-cutout::before,
+    .ticket-cutout::after {
+      content: '';
+      position: absolute;
+      top: -12px;
+      width: 24px;
+      height: 24px;
+      background-color: #F5F2EB;
+      border-radius: 50%;
+      z-index: 10;
+    }
+    .ticket-cutout::before { left: -12px; }
+    .ticket-cutout::after { right: -12px; }
+
+    /* ELDER MODE FULL FIX */
+    body.elder-mode {
+      background-color: #000000 !important;
+      color: #FDE047 !important;
+    }
+    body.elder-mode .bg-beige-50,
+    body.elder-mode .bg-white,
+    body.elder-mode [class*="bg-beige-"],
+    body.elder-mode [class*="bg-stone-"],
+    body.elder-mode div {
+      background-color: #111111 !important;
+      border-color: #FDE047 !important;
+      color: #FDE047 !important;
+    }
+    body.elder-mode .text-stone-900,
+    body.elder-mode .text-stone-800,
+    body.elder-mode .text-stone-700,
+    body.elder-mode .text-stone-600,
+    body.elder-mode .text-stone-500,
+    body.elder-mode span,
+    body.elder-mode p,
+    body.elder-mode label,
+    body.elder-mode td,
+    body.elder-mode th {
+      color: #FEF08A !important;
+      font-size: 1.15rem !important;
+      font-weight: 700 !important;
+    }
+    body.elder-mode h1,
+    body.elder-mode h2,
+    body.elder-mode h3,
+    body.elder-mode h4 {
+      color: #FDE047 !important;
+      font-size: 1.9rem !important;
+      font-weight: 900 !important;
+    }
+    body.elder-mode .bg-sky-500,
+    body.elder-mode .bg-sky-600,
+    body.elder-mode .bg-emerald-600,
+    body.elder-mode .bg-amber-500 {
+      background-color: #FDE047 !important;
+      color: #000000 !important;
+    }
+    body.elder-mode input,
+    body.elder-mode select,
+    body.elder-mode textarea {
+      background-color: #222222 !important;
+      color: #FDE047 !important;
+      border: 2px solid #FDE047 !important;
+      font-size: 1.2rem !important;
+    }
+    body.elder-mode .ticket-cutout::before,
+    body.elder-mode .ticket-cutout::after {
+      background-color: #000000 !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- ==================== GLOBAL HEADER ==================== -->
+  <nav class="bg-beige-50 border-b border-beige-200 sticky top-0 z-50 shadow-sm transition-colors duration-300" id="global-nav">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button
+          id="nav-back-btn"
+          onclick="showView('view-home')"
+          class="w-9 h-9 rounded-full bg-beige-200 hover:bg-beige-300 flex items-center justify-center text-stone-700 transition-colors hidden cursor-pointer"
+          title="Back to Home"
+        >
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </button>
+        <div 
+          onclick="showView('view-home')"
+          class="flex items-center gap-2 cursor-pointer group"
+        >
+          <div class="w-10 h-10 bg-sky-500 rounded-xl flex items-center justify-center text-white text-xl shadow-md group-hover:scale-105 transition-transform">
+            🌾
+          </div>
+          <div>
+            <span class="font-black text-xl tracking-tight text-stone-900 block leading-none" id="nav-app-title">
+              कृषि सेतु
+            </span>
+            <span class="text-[10px] font-bold text-stone-600 tracking-wider uppercase">
+              APMC Smart Grid
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Action Bar -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <select
+          id="lang-select"
+          onchange="changeLanguage(this.value)"
+          class="bg-white border border-beige-200 text-stone-800 text-xs font-bold rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm cursor-pointer"
+        >
+          <option value="en">English</option>
+          <option value="hi" selected>हिंदी (Hindi)</option>
+          <option value="gu">ગુજરાતી (Gujarati)</option>
+          <option value="te">తెలుగు (Telugu)</option>
+          <option value="ta">தமிழ் (Tamil)</option>
+        </select>
+
+        <button
+          id="elder-toggle-btn"
+          onclick="toggleElderMode()"
+          class="px-3 py-2 rounded-lg text-xs font-bold border transition-all shadow-sm flex items-center gap-1.5 bg-white text-stone-700 border-beige-200 hover:bg-beige-100 cursor-pointer"
+        >
+          <i class="fa-solid fa-glasses"></i>
+          <span id="elder-mode-text" class="hidden sm:inline">बड़ा मोड (Elder)</span>
+        </button>
+
+        <button
+          id="nav-sms-inbox-btn"
+          type="button"
+          onclick="openSmsInbox()"
+          class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-bold border transition-all shadow-sm flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 cursor-pointer"
+          title="View SMS Alert Messages"
+        >
+          <i class="fa-solid fa-comment-sms text-emerald-600"></i>
+          <span class="hidden sm:inline" id="nav-sms-lbl">SMS Alerts</span>
+          <span id="nav-sms-count" class="bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">1</span>
+        </button>
+
+        <div id="nav-staff-slot">
+          <button
+            onclick="showView('view-admin-choice')"
+            class="px-3 py-2 rounded-lg text-xs font-black border border-stone-300 text-stone-700 hover:bg-beige-100 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+          >
+            <i class="fa-solid fa-building-columns text-stone-600"></i>
+            <span id="nav-admin-btn-text" class="hidden sm:inline">एडमिन गेटवे</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Incoming SMS Notification Banner -->
+  <div 
+    id="sms-incoming-banner"
+    class="fixed top-4 right-4 left-4 sm:left-auto sm:w-[440px] z-[9999] transition-all duration-300 transform -translate-y-64 opacity-0 pointer-events-none"
+    style="filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4));"
+  >
+    <div class="bg-stone-900 text-white rounded-2xl p-4 border border-stone-700/90 shadow-2xl backdrop-blur-md">
+      <div class="flex items-center justify-between border-b border-stone-800 pb-2.5 mb-2.5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-base shadow-sm">
+            <i class="fa-solid fa-comment-sms"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-black text-sm text-white tracking-wide">GOV-KRISHI</span>
+              <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                <i class="fa-solid fa-circle-check text-[9px]"></i> Verified Mandi SMS
+              </span>
+            </div>
+            <div class="text-[11px] text-stone-400 flex items-center gap-1.5">
+              <span>To: <strong id="sms-banner-phone" class="text-stone-200">+91 98251 44320</strong></span>
+              <span>&bull;</span>
+              <span>Just now</span>
+            </div>
+          </div>
+        </div>
+        <button 
+          type="button"
+          onclick="dismissSmsPopup()"
+          class="text-stone-400 hover:text-white p-1.5 rounded-lg hover:bg-stone-800 transition-colors cursor-pointer"
+        >
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="bg-stone-800/90 rounded-xl p-3 text-xs text-stone-100 leading-relaxed border border-stone-700/60">
+        <div class="font-bold text-emerald-400 mb-1 flex items-center gap-1.5 text-xs">
+          <i class="fa-solid fa-circle-check text-emerald-400"></i>
+          <span>System Alert</span>
+        </div>
+        <p id="sms-banner-body" class="text-stone-200 select-text font-normal text-xs leading-relaxed">
+          [KrishiSetu Mandi Alert] Namaste! Your slot is confirmed...
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Toast -->
+  <div
+    id="toast"
+    class="fixed top-20 left-1/2 transform -translate-x-1/2 z-[9999] px-6 py-3 rounded-full font-bold shadow-2xl transition-all duration-300 bg-stone-900 text-white flex items-center gap-2 -translate-y-20 opacity-0 pointer-events-none"
+  >
+    <i class="fa-solid fa-circle-info text-sky-400"></i>
+    <span id="toast-msg">Notification</span>
+  </div>
+
+  <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8 relative">
+
+    <!-- 1. LANDING GATEWAY -->
+    <div id="view-home" class="slide-up flex flex-col items-center justify-center mt-10">
+      <div class="text-center mb-12">
+        <div class="w-20 h-20 bg-sky-500 text-white rounded-2xl flex items-center justify-center font-bold text-4xl shadow-lg mx-auto mb-6">🌾</div>
+        <h1 class="text-4xl md:text-5xl font-black text-stone-900 mb-4" id="home-welcome-title">कृषि सेतु में आपका स्वागत है</h1>
+        <p class="text-lg text-stone-600 font-medium" id="home-welcome-sub">एकीकृत खरीद और एआई कतार प्रबंधन</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+        <button
+          onclick="handleFarmerEntry()"
+          class="bg-beige-50 p-8 rounded-3xl shadow-lg border-2 border-transparent hover:border-sky-500 transition-all group text-left flex flex-col items-start cursor-pointer"
+        >
+          <div class="w-14 h-14 bg-sky-100 text-sky-600 rounded-xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+            <i class="fa-solid fa-tractor"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-stone-900 mb-2" id="home-farmer-btn">किसान पोर्टल</h2>
+          <p class="text-stone-600 mb-6" id="home-farmer-desc">पंजीकरण करें, स्लॉट बुक करें और कतार की स्थिति देखें।</p>
+          <span class="mt-auto font-bold text-sky-500 flex items-center gap-2">
+            <span id="home-enter-portal">पोर्टल में प्रवेश करें</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </span>
+        </button>
+
+        <button
+          onclick="showView('view-admin-choice')"
+          class="bg-beige-50 p-8 rounded-3xl shadow-lg border-2 border-transparent hover:border-sky-500 transition-all group text-left flex flex-col items-start cursor-pointer"
+        >
+          <div class="w-14 h-14 bg-beige-200 text-stone-700 rounded-xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-stone-900 mb-2" id="home-admin-btn">मंडी एडमिन</h2>
+          <p class="text-stone-600 mb-6" id="home-admin-desc">कार्यकर्ता और सुपर एडमिन पोर्टल।</p>
+          <span class="mt-auto font-bold text-stone-700 flex items-center gap-2">
+            <span id="home-admin-action">एडमिन विकल्प</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 1.2 MANDI ADMIN CHOICE SELECTION -->
+    <div id="view-admin-choice" class="slide-up max-w-3xl mx-auto py-8 hidden">
+      <div class="mb-6">
+        <button onclick="showView('view-home')" class="inline-flex items-center gap-2 text-stone-600 hover:text-stone-900 font-bold text-xs bg-beige-200 px-3.5 py-2 rounded-xl transition-all cursor-pointer">
+          <i class="fa-solid fa-arrow-left"></i><span class="lbl-back-home">वापस मुख्य पृष्ठ</span>
+        </button>
+      </div>
+
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-black text-stone-900" id="choice-title">मंडी एडमिन गेटवे</h2>
+        <p class="text-sm font-semibold text-stone-600 mt-1" id="choice-sub">अपनी प्रशासनिक भूमिका का चयन करें</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div onclick="showView('view-admin-auth')" class="bg-white p-6 md:p-8 rounded-3xl shadow-md border-2 border-beige-200 hover:border-sky-500 transition-all cursor-pointer flex flex-col items-start group hover:shadow-lg">
+          <div class="w-14 h-14 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform border border-sky-100">
+            <i class="fa-solid fa-id-badge"></i>
+          </div>
+          <h3 class="text-xl font-black text-stone-900" id="choice-worker-title">मंडी कार्यकर्ता / स्टाफ</h3>
+          <p class="text-xs text-stone-600 font-semibold mt-2 mb-6 leading-relaxed" id="choice-worker-desc">
+            टोकन कॉल करने, फसल का वजन दर्ज करने और DBT भुगतान स्वीकृत करने के लिए अधिकृत खरीद केंद्र कार्यकर्ता।
+          </p>
+          <span class="mt-auto inline-flex items-center gap-1.5 text-xs font-black text-sky-600">
+            <span id="choice-worker-action">स्टाफ लॉगिन</span> <i class="fa-solid fa-arrow-right"></i>
+          </span>
+        </div>
+
+        <div onclick="showView('view-super-auth')" class="bg-white p-6 md:p-8 rounded-3xl shadow-md border-2 border-amber-200 hover:border-amber-500 transition-all cursor-pointer flex flex-col items-start group hover:shadow-lg">
+          <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform border border-amber-200">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div class="flex items-center gap-2">
+            <h3 class="text-xl font-black text-stone-900" id="choice-super-title">सुपर एडमिन</h3>
+            <span class="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-black px-2 py-0.5 rounded-full uppercase" id="choice-super-badge">केंद्र विशिष्ट निगरानी</span>
+          </div>
+          <p class="text-xs text-stone-600 font-semibold mt-2 mb-6 leading-relaxed" id="choice-super-desc">
+            विशेष APMC बाजार का चयन करें, क्रेडेंशियल्स दर्ज करें और केवल उस केंद्र की खरीद एनालिटिक्स की निगरानी करें।
+          </p>
+          <span class="mt-auto inline-flex items-center gap-1.5 text-xs font-black text-amber-700">
+            <span id="choice-super-action">सुपर एडमिन लॉगिन</span> <i class="fa-solid fa-arrow-right"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.5 ONE-TIME FARMER REGISTRATION (KYC/OTP) WITH NAME VALIDATION -->
+    <div id="view-farmer-auth" class="slide-up max-w-md mx-auto mt-6 hidden">
+      <div class="bg-beige-50 p-6 md:p-8 rounded-3xl shadow-xl border border-beige-200">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl shadow-sm mx-auto mb-4">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+          </div>
+          <h2 class="text-2xl font-black text-stone-900" id="auth-farmer-title">किसान पंजीकरण (KYC)</h2>
+          <p class="text-stone-600 text-sm mt-2 font-medium" id="auth-farmer-sub">One-Time Secure Registration</p>
+        </div>
+
+        <div id="auth-step-1" class="space-y-5">
+          <div>
+            <label class="block text-sm font-bold text-stone-700 uppercase tracking-wide mb-2" id="lbl-auth-name">पूरा नाम (Full Name)</label>
+            <input type="text" id="auth-name" oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')" placeholder="उदा. रमेश पटेल" class="w-full p-4 rounded-xl border border-beige-200 bg-white font-bold text-stone-900 outline-none focus:ring-2 focus:ring-emerald-500" />
+          </div>
+          <div>
+             <label class="block text-sm font-bold text-stone-700 uppercase tracking-wide mb-2" id="lbl-auth-phone">मोबाइल नंबर (Mobile Number)</label>
+             <div class="relative flex items-center">
+              <span class="absolute left-3.5 font-bold text-stone-600 text-sm bg-stone-100 px-2 py-1 rounded-md border border-stone-200 flex items-center gap-1"><span>🇮🇳</span><span>+91</span></span>
+              <input type="tel" id="auth-phone" inputmode="numeric" maxlength="10" placeholder="98251 44320" class="w-full pl-24 pr-4 py-3.5 rounded-xl border border-beige-200 bg-white font-bold text-stone-900 outline-none focus:ring-2 focus:ring-emerald-500 font-mono text-base" />
+            </div>
+          </div>
+          <button type="button" onclick="sendFarmerOtp()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-lg shadow-lg transition-transform active:scale-95 cursor-pointer" id="btn-get-otp">
+            Get Verification OTP
+          </button>
+        </div>
+
+        <div id="auth-step-2" class="space-y-5 hidden">
+          <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 mb-4 text-center">
+            <p class="text-sm text-emerald-800 font-semibold" id="otp-info-msg">An OTP has been sent to your mobile.</p>
+            <p class="text-xs text-emerald-600 font-bold mt-1">(Demo: Type 1234)</p>
+          </div>
+          <div>
+            <label class="block text-center text-sm font-bold text-stone-700 uppercase tracking-wide mb-2" id="lbl-enter-otp">Enter 4-Digit OTP</label>
+            <input type="text" id="auth-otp" maxlength="4" class="w-full p-4 text-center tracking-[1em] rounded-xl border border-beige-200 bg-white font-black text-2xl text-stone-900 outline-none focus:ring-2 focus:ring-emerald-500" />
+          </div>
+          <button type="button" onclick="verifyFarmerOtp()" class="w-full py-4 bg-stone-900 hover:bg-stone-800 text-white rounded-xl font-black text-lg shadow-lg transition-transform active:scale-95 cursor-pointer" id="btn-verify-otp">
+            Verify & Login
+          </button>
+          <button type="button" onclick="resetAuthForm()" class="w-full py-2 text-stone-500 font-bold text-sm hover:text-stone-800 transition-colors cursor-pointer" id="btn-back-edit">
+            &larr; Back to edit details
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. FARMER REGISTRATION (SLOT BOOKING) -->
+    <div id="view-farmer-reg" class="slide-up max-w-md mx-auto mt-6 hidden">
+      <div class="bg-beige-50 p-6 md:p-8 rounded-3xl shadow-xl border border-beige-200 relative">
+        <button onclick="logoutFarmer()" class="absolute top-4 right-4 px-3 py-1.5 bg-white border border-stone-200 text-stone-500 text-xs font-bold rounded-lg hover:bg-stone-100 transition-colors shadow-sm cursor-pointer"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> <span class="lbl-sign-out">Sign Out</span></button>
+
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center text-3xl shadow-sm mx-auto mb-4">
+            <i class="fa-solid fa-wheat-awn"></i>
+          </div>
+          <h2 class="text-2xl font-black text-stone-900" id="reg-title">स्लॉट पंजीकरण</h2>
+          <p class="text-stone-600 text-sm mt-2 font-medium" id="reg-sub">Book your procurement slot</p>
+        </div>
+
+        <div class="space-y-5">
+          <div>
+            <label class="block text-sm font-bold text-stone-700 uppercase tracking-wide mb-2" id="lbl-name">पूरा नाम (Full Name)</label>
+            <input type="text" id="f-name" readonly class="w-full p-4 rounded-xl border border-beige-200 bg-stone-100 font-bold text-stone-500 outline-none" />
+            <input type="hidden" id="f-phone" />
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-bold text-stone-700 uppercase tracking-wide" id="lbl-mandi">मंडी चुनें (Select Mandi)</label>
+              <span id="selected-mandi-badge" class="text-xs font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 hidden">✓ Selected</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2" id="mandi-chips">
+              <button type="button" onclick="selectMandiChip('Gandhinagar')" class="mandi-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer transition-all" data-mandi="Gandhinagar">📍 <span class="mandi-name" data-key="Gandhinagar">Gandhinagar</span></button>
+              <button type="button" onclick="selectMandiChip('Ahmedabad')" class="mandi-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer transition-all" data-mandi="Ahmedabad">📍 <span class="mandi-name" data-key="Ahmedabad">Ahmedabad</span></button>
+              <button type="button" onclick="selectMandiChip('Rajkot')" class="mandi-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer transition-all" data-mandi="Rajkot">📍 <span class="mandi-name" data-key="Rajkot">Rajkot</span></button>
+              <button type="button" onclick="selectMandiChip('Surat')" class="mandi-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer transition-all" data-mandi="Surat">📍 <span class="mandi-name" data-key="Surat">Surat</span></button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-bold text-stone-700 uppercase tracking-wide" id="lbl-crop">फसल (Crop)</label>
+              <span id="selected-crop-badge" class="text-xs font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 hidden"></span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2.5" id="crop-quick-chips">
+              <button type="button" onclick="selectCropChip('Wheat')" class="crop-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all" data-crop="Wheat"><span class="text-lg">🌾</span><span class="crop-name" data-key="Wheat">गेहूं</span></button>
+              <button type="button" onclick="selectCropChip('Rice')" class="crop-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all" data-crop="Rice"><span class="text-lg">🍚</span><span class="crop-name" data-key="Rice">चावल</span></button>
+              <button type="button" onclick="selectCropChip('Cotton')" class="crop-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all" data-crop="Cotton"><span class="text-lg">☁️</span><span class="crop-name" data-key="Cotton">कपास</span></button>
+              <button type="button" onclick="selectCropChip('Maize')" class="crop-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all" data-crop="Maize"><span class="text-lg">🌽</span><span class="crop-name" data-key="Maize">मक्का</span></button>
+              <button type="button" onclick="selectCropChip('Bajra')" class="crop-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all" data-crop="Bajra"><span class="text-lg">🌾</span><span class="crop-name" data-key="Bajra">बाजरा</span></button>
+              <button type="button" onclick="selectCropChip('Jowar')" class="crop-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all" data-crop="Jowar"><span class="text-lg">🌾</span><span class="crop-name" data-key="Jowar">ज्वार</span></button>
+              <button type="button" onclick="selectCropChip('Sugarcane')" class="crop-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all" data-crop="Sugarcane"><span class="text-lg">🎋</span><span class="crop-name" data-key="Sugarcane">गन्ना</span></button>
+            </div>
+            <select id="f-crop" onchange="handleCropChange(this.value)" class="hidden">
+              <option value=""></option><option value="Wheat">Wheat</option><option value="Rice">Rice</option><option value="Cotton">Cotton</option>
+              <option value="Maize">Maize</option><option value="Bajra">Bajra</option><option value="Jowar">Jowar</option><option value="Sugarcane">Sugarcane</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-stone-700 uppercase tracking-wide mb-2" id="lbl-qty">मात्रा (किलो)</label>
+            <div class="relative">
+              <input type="number" id="f-qty" oninput="handleCropChange(document.getElementById('f-crop').value)" placeholder="उदा. 500" class="w-full p-4 pr-16 rounded-xl border border-beige-200 bg-white font-bold text-stone-900 outline-none focus:ring-2 focus:ring-sky-500 text-lg" />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-stone-400 select-none">Kg</span>
+            </div>
+          </div>
+
+          <div id="ai-date-box" class="mt-4 bg-emerald-50 border-2 border-emerald-500 rounded-xl p-4 shadow-sm relative overflow-hidden hidden">
+            <div class="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-black uppercase px-2 py-1 rounded-bl-lg">AI Optimizer</div>
+            <div class="flex items-start gap-3 mt-2">
+              <i class="fa-solid fa-chart-line text-emerald-600 text-xl mt-1"></i>
+              <div>
+                <h4 class="font-bold text-emerald-800 text-sm mb-1" id="ai-deal-title">Best Market Deal Found!</h4>
+                <p class="text-emerald-700 text-xs font-semibold leading-snug" id="ai-forecast-text">Our ML forecast suggests selling your crop on <strong class="text-emerald-900 text-sm" id="ai-forecast-date">Tomorrow</strong>. You will get approx ₹<span id="ai-forecast-profit">15</span> more per Kg with zero waiting time.</p>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+              <button type="button" id="btn-smart-book" onclick="bookSlotWithSmartDate()" class="flex-1 bg-emerald-600 text-white py-2.5 rounded-lg text-xs font-bold shadow hover:bg-emerald-700 transition-colors cursor-pointer">Book Suggested Date</button>
+              <button type="button" id="btn-today-book" onclick="bookSlot('today', 'Today')" class="flex-1 bg-white border border-stone-300 text-stone-600 py-2.5 rounded-lg text-xs font-bold hover:bg-stone-50 transition-colors cursor-pointer">Book for Today</button>
+            </div>
+          </div>
+
+          <div id="default-book-container">
+            <button type="button" onclick="bookSlot('today', 'Today')" class="w-full py-4 mt-4 bg-sky-500 hover:bg-sky-600 text-white rounded-xl font-black text-lg shadow-lg transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2" id="btn-book">
+              <span>स्लॉट बुक करें</span><i class="fa-solid fa-arrow-right text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="farmer-history-section" class="mt-8 pt-6 border-t border-beige-300">
+          <h3 class="text-base font-black text-stone-900 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-sky-500"></i> <span id="lbl-booking-history">बुकिंग इतिहास</span>
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="text-stone-500 border-b border-beige-200">
+                  <th class="pb-2" id="th-h-token">टोकन</th>
+                  <th class="pb-2" id="th-h-crop">फसल</th>
+                  <th class="pb-2" id="th-h-qty">मात्रा</th>
+                  <th class="pb-2" id="th-h-status">स्थिति</th>
+                </tr>
+              </thead>
+              <tbody id="farmer-history-tbody" class="divide-y divide-beige-100 font-semibold">
+                <tr><td colspan="4" class="py-3 text-stone-400 text-center">No past bookings found.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3. FARMER LIVE TRACKER -->
+    <div id="view-farmer-tracker" class="slide-up max-w-md mx-auto space-y-6 mt-4 hidden">
+      <div class="bg-beige-50 rounded-3xl shadow-xl border border-beige-200 overflow-hidden relative">
+        <button onclick="logoutFarmer()" class="absolute top-4 right-4 px-3 py-1.5 bg-white/20 border border-white/40 text-white text-xs font-bold rounded-lg hover:bg-white/30 transition-colors shadow-sm z-20 cursor-pointer"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> <span class="lbl-sign-out">Sign Out</span></button>
+
+        <div class="bg-sky-500 text-white p-6 text-center pt-10">
+          <p class="font-bold text-sm tracking-widest uppercase mb-1 opacity-90" id="pass-title">डिजिटल खरीद पास</p>
+          <h2 class="text-5xl sm:text-6xl font-black tracking-tight" id="t-token">#KS0001</h2>
+          <!-- Booking Date and Time Slot displayed below token number as requested -->
+          <div class="mt-1.5 flex flex-wrap items-center justify-center gap-2">
+            <p class="text-xs font-black bg-white/20 inline-block px-3 py-1 rounded-full" id="t-date-display">📅 Date: Today</p>
+            <p class="text-xs font-black bg-emerald-600/80 inline-block px-3 py-1 rounded-full text-white" id="t-time-display">⏰ Time: 10-11am</p>
+          </div>
+          <div><p class="text-sm font-bold bg-white/20 inline-block px-3 py-1 rounded-full mt-2" id="t-mandi-display">📍 APMC Yard</p></div>
+        </div>
+
+        <div class="p-6 pb-8 border-b-2 border-dashed border-beige-200 ticket-cutout">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <p class="text-xs font-bold text-stone-500 uppercase" id="t-lbl-name">पूरा नाम</p>
+              <p class="font-black text-xl text-stone-900" id="t-name">Suresh Patel</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs font-bold text-stone-500 uppercase" id="t-lbl-crop">फसल</p>
+              <p class="font-black text-xl text-stone-900"><span id="t-qty">1200</span> Kg <span id="t-crop" class="text-sky-500">गेहूं</span></p>
+            </div>
+          </div>
+
+          <div class="mt-6 bg-sky-50 border border-sky-200 rounded-xl p-4 flex items-start gap-3 shadow-sm">
+            <i class="fa-solid fa-wand-magic-sparkles text-sky-500 text-xl mt-1 animate-pulse"></i>
+            <div>
+              <h4 class="font-bold text-sky-600 text-sm uppercase tracking-wide mb-1" id="t-ai-title">एआई प्रतीक्षा समय अनुमान</h4>
+              <p class="text-stone-800 font-semibold text-sm leading-snug" id="t-ai-desc">हमारे डेटा के अनुसार, प्रक्रिया में लगभग 41 मिनट का समय लगेगा।</p>
+            </div>
+          </div>
+
+          <div class="mt-3 bg-white/60 p-3 rounded-xl border border-sky-100 flex items-center gap-2 shadow-sm">
+            <span id="t-supply-metric" class="text-xs font-bold text-stone-700">📊 0 other farmers are selling this crop today.</span>
+          </div>
+
+          <!-- Realistic Encoded Barcode Generator Container -->
+          <div class="mt-6 flex flex-col items-center justify-center bg-white p-3.5 rounded-xl border border-stone-300 shadow-sm">
+            <div id="barcode-container" class="h-14 w-full flex items-stretch justify-between overflow-hidden px-1"></div>
+            <p id="barcode-hash-text" class="text-[11px] font-mono tracking-widest text-stone-700 font-black mt-2"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-beige-50 p-6 rounded-3xl shadow-xl border border-beige-200 relative overflow-hidden">
+        <div class="flex justify-between items-center mb-8">
+          <h3 class="font-black text-lg text-stone-900" id="tracker-title">लाइव ट्रैकर</h3>
+          <span class="text-xs px-2 py-1 rounded bg-sky-100 text-sky-700 font-bold animate-pulse border border-sky-200">Live Sync</span>
+        </div>
+        <div class="space-y-8 relative z-10" id="tracker-steps">
+          <div class="absolute left-7 top-7 bottom-7 w-1 bg-beige-200 rounded-full -z-10"></div>
+          <div class="flex items-center gap-4 relative transition-all duration-500 opacity-100" id="tracker-step-1">
+            <div id="step-1-icon" class="w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-sky-500 text-white border-sky-500 animate-pulse shadow-[0_0_15px_rgba(14,165,233,0.5)]">🎫</div>
+            <div><h4 class="font-black text-lg text-stone-900" id="step-1-text">स्लॉट बुक हो गया</h4><p class="text-xs font-bold mt-1 text-sky-600" id="step-1-sub">एडमिन का इंतज़ार...</p></div>
+          </div>
+          <div id="tracker-step-2" class="flex items-center gap-4 relative transition-all duration-500 opacity-40 grayscale">
+            <div id="step-2-icon" class="w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-white border-beige-200 text-stone-300">⚖️</div>
+            <div><h4 class="font-black text-lg text-stone-900" id="step-2-text">फसल का वजन हो गया</h4><p class="text-xs font-bold mt-1 text-sky-600 hidden" id="step-2-sub">एडमिन का इंतज़ार...</p></div>
+          </div>
+          <div id="tracker-step-3" class="flex items-center gap-4 relative transition-all duration-500 opacity-40 grayscale">
+            <div id="step-3-icon" class="w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-white border-beige-200 text-stone-300">🏦</div>
+            <div><h4 class="font-black text-lg text-stone-900" id="step-3-text">बैंक में भुगतान भेजा गया</h4><p class="text-xs font-bold mt-1 text-emerald-600 hidden" id="step-3-sub">सफलतापूर्वक पूरा हुआ।</p></div>
+          </div>
+        </div>
+        <button id="btn-another" onclick="resetFarmerSession()" class="w-full mt-8 py-4 bg-stone-900 text-white rounded-xl font-bold hover:bg-stone-800 transition-colors cursor-pointer hidden">दूसरा स्लॉट बुक करें</button>
+      </div>
+    </div>
+
+    <!-- 4. MANDI WORKER / STAFF AUTHENTICATION WITH APMC SELECTION -->
+    <div id="view-admin-auth" class="slide-up max-w-xl mx-auto py-4 hidden">
+      <div class="mb-4">
+        <button onclick="showView('view-admin-choice')" class="inline-flex items-center gap-2 text-stone-600 hover:text-stone-900 font-bold text-xs bg-beige-200 px-3.5 py-2 rounded-xl transition-all cursor-pointer">
+          <i class="fa-solid fa-arrow-left"></i><span id="lbl-auth-back-choice">वापस भूमिका चयन</span>
+        </button>
+      </div>
+
+      <div class="bg-beige-50 rounded-3xl shadow-xl border border-beige-200 overflow-hidden">
+        <div class="bg-stone-900 text-white p-6 sm:p-8 text-center relative">
+          <div class="w-16 h-16 bg-sky-500 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg mx-auto mb-3">
+            <i class="fa-solid fa-id-badge"></i>
+          </div>
+          <h2 class="text-2xl font-black tracking-tight" id="auth-worker-title">मंडी कार्यकर्ता पोर्टल</h2>
+          <p class="text-stone-300 text-xs sm:text-sm mt-1" id="auth-worker-sub">ग्राउंड स्टाफ तौल और DBT डेस्क</p>
+        </div>
+
+        <form id="staff-auth-form" onsubmit="handleStaffAuth(event)" class="p-6 sm:p-8 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wide mb-1.5" id="lbl-staff-mandi">कार्यक्षेत्र APMC बाजार चुनें (Select Workspace)</label>
+            <select id="staff-select-mandi" required class="w-full px-4 py-3 bg-white border border-beige-300 rounded-xl font-semibold text-stone-900 focus:ring-2 focus:ring-sky-500 focus:outline-none text-sm cursor-pointer">
+              <option value="Gandhinagar">Gandhinagar APMC</option>
+              <option value="Ahmedabad">Ahmedabad APMC</option>
+              <option value="Rajkot">Rajkot APMC</option>
+              <option value="Surat">Surat APMC</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wide mb-1.5" id="lbl-staff-email">आधिकारिक स्टाफ ईमेल</label>
+            <input type="email" id="staff-email" required placeholder="dilip@apmc.gujarat.gov.in" class="w-full px-4 py-3 bg-white border border-beige-300 rounded-xl font-semibold text-stone-900 focus:ring-2 focus:ring-sky-500 focus:outline-none text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wide mb-1.5" id="lbl-staff-pass">पासवर्ड</label>
+            <input type="password" id="staff-pass" required placeholder="••••••••" class="w-full px-4 py-3 bg-white border border-beige-300 rounded-xl font-semibold text-stone-900 focus:ring-2 focus:ring-sky-500 focus:outline-none text-sm" />
+          </div>
+          <button type="submit" class="w-full py-3.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i><span id="btn-staff-submit">मंडी डेस्क पर लॉगिन करें</span>
+          </button>
+          
+          <div class="relative my-4 text-center">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-beige-300"></div></div>
+            <span class="relative bg-beige-50 px-3 text-[11px] font-bold text-stone-500 uppercase tracking-wider">Demo Access</span>
+          </div>
+          <button type="button" onclick="quickStaffDemoLogin()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-bolt"></i><span id="btn-staff-quick">⚡ 1-क्लिक कार्यकर्ता लॉगिन</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 4.5 SUPER ADMIN AUTHENTICATION (MARKET SELECTION REQUIRED) -->
+    <div id="view-super-auth" class="slide-up max-w-xl mx-auto py-4 hidden">
+      <div class="mb-4">
+        <button onclick="showView('view-admin-choice')" class="inline-flex items-center gap-2 text-stone-600 hover:text-stone-900 font-bold text-xs bg-beige-200 px-3.5 py-2 rounded-xl transition-all cursor-pointer">
+          <i class="fa-solid fa-arrow-left"></i><span class="lbl-auth-back-choice-2">वापस भूमिका चयन</span>
+        </button>
+      </div>
+
+      <div class="bg-white rounded-3xl shadow-xl border border-beige-300 overflow-hidden">
+        <div class="p-6 sm:p-8 text-center bg-amber-50 border-b border-amber-200">
+          <div class="w-16 h-16 bg-amber-500 text-white rounded-2xl flex items-center justify-center text-3xl shadow-md mx-auto mb-3">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h2 class="text-2xl font-black tracking-tight text-stone-900" id="auth-super-title">सुपर एडमिन लॉगिन</h2>
+          <p class="text-stone-600 text-xs sm:text-sm mt-1" id="auth-super-sub">बाजार चुनें एवं सुरक्षा क्रेडेंशियल दर्ज करें</p>
+        </div>
+
+        <form onsubmit="handleSuperAuth(event)" class="p-6 sm:p-8 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wide mb-1.5" id="lbl-super-market">APMC बाजार चुनें (Select Market)</label>
+            <select id="super-login-market" required class="w-full px-4 py-3 bg-white border border-beige-300 rounded-xl font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm cursor-pointer">
+              <option value="">-- बाजार चुनें --</option>
+              <option value="Gandhinagar">Gandhinagar APMC</option>
+              <option value="Ahmedabad">Ahmedabad APMC</option>
+              <option value="Rajkot">Rajkot APMC</option>
+              <option value="Surat">Surat APMC</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wide mb-1.5" id="lbl-super-user">सुपर एडमिन आईडी / ईमेल</label>
+            <input type="text" id="super-user" required placeholder="superadmin@agri.gujarat.gov.in" class="w-full px-4 py-3 bg-white border border-beige-300 rounded-xl font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wide mb-1.5" id="lbl-super-key">सुरक्षा मास्टर की</label>
+            <input type="password" id="super-key" required placeholder="••••••••" class="w-full px-4 py-3 bg-white border border-beige-300 rounded-xl font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm" />
+          </div>
+          <button type="submit" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-lock-open"></i><span id="btn-super-submit">सुपर एडमिन कंसोल खोलें</span>
+          </button>
+
+          <div class="relative my-4 text-center">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-beige-200"></div></div>
+            <span class="relative bg-white px-3 text-[11px] font-bold text-stone-500 uppercase tracking-wider">Demo Credentials</span>
+          </div>
+          <button type="button" onclick="quickSuperDemoLogin()" class="w-full py-3 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-300">
+            <i class="fa-solid fa-bolt text-amber-600"></i><span id="btn-super-quick">⚡ 1-क्लिक सुपर एडमिन लॉगिन (गांधीनगर)</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 5. MANDI WORKER DASHBOARD -->
+    <div id="view-admin" class="slide-up hidden">
+      <div class="bg-white border border-beige-200 rounded-2xl p-4 md:p-5 shadow-sm mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center text-2xl font-black">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div>
+            <h3 class="font-black text-stone-900 text-base" id="admin-staff-name">Inspector Dilip Varma</h3>
+            <p class="text-xs text-stone-500 font-semibold mt-0.5" id="admin-desk-badge">📍 APMC Gandhinagar Yard (Worker Desk)</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <select id="admin-filter" onchange="renderAdminQueueTable()" class="bg-beige-100 border border-beige-200 text-stone-700 font-bold text-xs rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer">
+            <option value="All" class="filter-option" data-key="All">All Crops</option>
+            <option value="Wheat" class="filter-option" data-key="Wheat">Wheat Only</option>
+            <option value="Rice" class="filter-option" data-key="Rice">Rice Only</option>
+            <option value="Cotton" class="filter-option" data-key="Cotton">Cotton Only</option>
+            <option value="Maize" class="filter-option" data-key="Maize">Maize Only</option>
+            <option value="Bajra" class="filter-option" data-key="Bajra">Bajra Only</option>
+            <option value="Jowar" class="filter-option" data-key="Jowar">Jowar Only</option>
+            <option value="Sugarcane" class="filter-option" data-key="Sugarcane">Sugarcane Only</option>
+          </select>
+          <button onclick="handleStaffSignOut()" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer border border-stone-300">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="lbl-sign-out">लॉग आउट</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-beige-50 p-5 rounded-2xl shadow-sm border border-beige-200">
+          <p class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1" id="lbl-stat-total">कुल टोकन</p>
+          <h2 class="text-3xl font-black text-stone-900" id="a-total">0</h2>
+        </div>
+        <div class="bg-beige-50 p-5 rounded-2xl shadow-sm border border-beige-200">
+          <p class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1" id="lbl-stat-wait">प्रतीक्षारत</p>
+          <h2 class="text-3xl font-black text-amber-500" id="a-wait">0</h2>
+        </div>
+        <div class="bg-beige-50 p-5 rounded-2xl shadow-sm border border-beige-200">
+          <p class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1" id="lbl-stat-counter">काउंटर पर</p>
+          <h2 class="text-3xl font-black text-sky-500" id="a-counter">0</h2>
+        </div>
+        <div class="bg-beige-50 p-5 rounded-2xl shadow-sm border border-beige-200">
+          <p class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-1" id="lbl-stat-processed">भुगतान संपन्न</p>
+          <h2 class="text-3xl font-black text-emerald-500" id="a-paid">0</h2>
+        </div>
+      </div>
+
+      <div class="bg-beige-50 rounded-2xl shadow-xl border border-beige-200 overflow-hidden">
+        <div class="p-6 border-b border-beige-200 bg-white">
+          <h2 class="text-xl font-black text-stone-900 flex items-center"><i class="fa-solid fa-list-check text-sky-500 mr-2"></i><span id="lbl-queue-title">लाइव कतार प्रबंधन</span></h2>
+          <p class="text-sm text-stone-500 font-medium mt-1" id="lbl-queue-sub">यहां की गई कार्रवाई किसान के ऐप में तुरंत अपडेट होती है।</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-beige-100 text-stone-600 text-xs font-bold uppercase tracking-wider border-b border-beige-200">
+              <tr>
+                <th class="p-4" id="th-token-mandi">टोकन और मंडी</th>
+                <th class="p-4" id="th-farmer-details">किसान विवरण</th>
+                <th class="p-4 text-sky-600" id="th-est-time"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> अनुमानित समय</th>
+                <th class="p-4" id="th-status">स्थिति</th>
+                <th class="p-4 text-right" id="th-actions">कार्यवाही (QC / भुगतान)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-beige-200 bg-white" id="admin-tbody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. SUPER ADMIN ANALYTICS & AUDIT CONSOLE (LOCKED TO 1 MARKET) -->
+    <div id="view-super-admin" class="slide-up hidden space-y-6">
+      <div class="bg-white border-2 border-amber-300/80 rounded-3xl p-5 md:p-6 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-3xl font-black shadow-md">
+            <i class="fa-solid fa-building-circle-check"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="font-black text-xl text-stone-900" id="super-hdr-title">बाजार खरीद कमांड सेंटर</h2>
+              <span class="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-black uppercase px-2 py-0.5 rounded-full" id="super-hdr-badge">सुपर एडमिन</span>
+            </div>
+            <p class="text-xs text-stone-600 font-semibold mt-1">
+              नियंत्रित APMC बाजार: <strong id="super-active-market-label" class="text-amber-700 font-black">Gandhinagar APMC</strong>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="handleStaffSignOut()" class="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold transition-all border border-stone-300 flex items-center gap-2 cursor-pointer shadow-sm">
+            <i class="fa-solid fa-arrow-right-from-bracket text-amber-600"></i><span class="lbl-sign-out">कंसोल से बाहर निकलें</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-beige-200 rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-black text-stone-500 uppercase tracking-wider mr-1" id="lbl-horizon">समयावधि:</span>
+          <button onclick="setSuperHorizon('day')" id="btn-horizon-day" class="px-3.5 py-1.5 rounded-lg text-xs font-black bg-stone-900 text-white shadow-sm transition-all cursor-pointer">दैनिक</button>
+          <button onclick="setSuperHorizon('week')" id="btn-horizon-week" class="px-3.5 py-1.5 rounded-lg text-xs font-black bg-beige-100 text-stone-700 hover:bg-beige-200 transition-all cursor-pointer">साप्ताहिक</button>
+          <button onclick="setSuperHorizon('season')" id="btn-horizon-season" class="px-3.5 py-1.5 rounded-lg text-xs font-black bg-beige-100 text-stone-700 hover:bg-beige-200 transition-all cursor-pointer">सीजन-वार (खरीफ 2026)</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-beige-50 p-5 rounded-2xl shadow-sm border border-beige-200">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-black uppercase tracking-wider text-stone-500" id="sup-lbl-gross">कुल खरीद मात्रा</span>
+            <i class="fa-solid fa-scale-balanced text-sky-500 text-sm"></i>
+          </div>
+          <h3 class="text-3xl font-black text-stone-900"><span id="sup-gross-qty">0</span> <span class="text-sm font-bold text-stone-500">Kg</span></h3>
+          <p class="text-[11px] font-bold text-stone-500 mt-1" id="sup-horizon-label">सत्यापित टोकन अनुसार</p>
+        </div>
+
+        <div class="bg-beige-50 p-5 rounded-2xl shadow-sm border border-beige-200">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-black uppercase tracking-wider text-stone-500" id="sup-lbl-dbt">डीबीटी भुगतान</span>
+            <i class="fa-solid fa-indian-rupee-sign text-emerald-600 text-sm"></i>
+          </div>
+          <h3 class="text-3xl font-black text-emerald-600">₹<span id="sup-gross-val">0</span></h3>
+          <p class="text-[11px] font-bold text-emerald-700 mt-1" id="sup-lbl-dbt-sub">सीधे बैंक खाते में</p>
+        </div>
+
+        <div class="bg-beige-50 p-5 rounded-2xl shadow-sm border border-beige-200">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-black uppercase tracking-wider text-stone-500" id="sup-lbl-workers">केन्द्र कार्यकर्ता</span>
+            <i class="fa-solid fa-users text-amber-500 text-sm"></i>
+          </div>
+          <h3 class="text-3xl font-black text-stone-900" id="sup-workers-count">1</h3>
+          <p class="text-[11px] font-bold text-stone-500 mt-1" id="sup-lbl-workers-sub">इस बाजार पर नियुक्त</p>
+        </div>
+
+        <div class="bg-beige-50 p-5 rounded-2xl shadow-sm border border-beige-200">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-black uppercase tracking-wider text-stone-500" id="sup-lbl-rejects">QC अस्वीकृतियां</span>
+            <i class="fa-solid fa-triangle-exclamation text-red-500 text-sm"></i>
+          </div>
+          <h3 class="text-3xl font-black text-red-600" id="sup-rejections-count">0</h3>
+          <p class="text-[11px] font-bold text-red-700 mt-1" id="sup-lbl-rejects-sub">गुणवत्ता विफलता ऑडिट</p>
+        </div>
+      </div>
+
+      <div class="bg-beige-50 rounded-3xl shadow-xl border border-beige-200 overflow-hidden">
+        <div class="flex border-b border-beige-200 bg-white">
+          <button onclick="switchSuperTab('tab-procurement')" id="super-tab-btn-procurement" class="px-6 py-4 font-black text-xs sm:text-sm border-b-2 border-amber-500 text-stone-900 flex items-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-chart-pie text-amber-500"></i> <span id="super-tab-label-proc">फसल वितरण एवं समय विश्लेषण</span>
+          </button>
+          <button onclick="switchSuperTab('tab-workers')" id="super-tab-btn-workers" class="px-6 py-4 font-black text-xs sm:text-sm border-b-2 border-transparent text-stone-500 hover:text-stone-900 flex items-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-id-card-clip text-sky-500"></i> <span id="super-tab-label-wrk">बाजार कार्यकर्ता क्रेडेंशियल्स</span>
+          </button>
+        </div>
+
+        <div id="tab-procurement" class="p-6 space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-5 rounded-2xl border border-beige-200 shadow-sm md:col-span-2">
+              <h4 class="font-black text-stone-900 text-sm mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-wheat-awn text-amber-600"></i> <span id="lbl-crop-dist">फसल वितरण (Crop Breakdown)</span>
+              </h4>
+              <div class="space-y-2.5 text-xs font-bold" id="sup-crop-breakdown">
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-beige-200 shadow-sm flex flex-col justify-center text-center">
+              <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center text-xl mx-auto mb-3">
+                <i class="fa-solid fa-store"></i>
+              </div>
+              <h4 class="font-black text-stone-900 text-sm mb-1" id="sup-single-title">Single Market Control</h4>
+              <p class="text-xs text-stone-500 font-semibold" id="sup-single-desc">You are currently inspecting and managing records exclusively for this APMC procurement center.</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-beige-200 overflow-hidden shadow-sm">
+            <div class="p-4 bg-beige-100/70 border-b border-beige-200 flex items-center justify-between">
+              <span class="text-xs font-black text-stone-800 uppercase tracking-wider" id="lbl-ledger-title">बाजार खरीद बहीखाता (Ledger)</span>
+              <span class="text-[11px] text-stone-500 font-bold" id="sup-ledger-count">0 records</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-beige-50 text-stone-600 font-black uppercase border-b border-beige-200">
+                  <tr>
+                    <th class="p-3" id="th-l-token">टोकन</th>
+                    <th class="p-3" id="th-l-farmer">किसान</th>
+                    <th class="p-3" id="th-l-crop">फसल / मात्रा</th>
+                    <th class="p-3" id="th-l-payout">भुगतान स्थिति</th>
+                    <th class="p-3" id="th-l-status">गुणवत्ता स्थिति</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-beige-100 font-semibold" id="sup-ledger-tbody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-workers" class="p-6 hidden space-y-6">
+          <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+            <i class="fa-solid fa-shield-cat text-amber-600 text-xl mt-0.5"></i>
+            <div>
+              <h4 class="font-black text-amber-900 text-sm" id="lbl-dir-title">इस बाजार के नियुक्त फील्ड कर्मी</h4>
+              <p class="text-xs text-amber-800 font-semibold mt-0.5" id="lbl-dir-sub">
+                चुने गए APMC बाजार के लिए अधिकृत प्राधिकारी और क्रेडेंशियल कुंजी।
+              </p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto bg-white rounded-2xl border border-beige-200 shadow-sm">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-stone-100 text-stone-700 font-black uppercase tracking-wider border-b border-beige-200">
+                <tr>
+                  <th class="p-4" id="th-w-id">कार्यकर्ता आईडी और नाम</th>
+                  <th class="p-4" id="th-w-email">आधिकारिक ईमेल</th>
+                  <th class="p-4" id="th-w-role">भूमिका / स्तर</th>
+                  <th class="p-4" id="th-w-key">क्रेडेंशियल कुंजी</th>
+                  <th class="p-4 text-right" id="th-w-status">स्थिति</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-beige-200 font-semibold" id="sup-workers-tbody">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function showView(viewId) {
+      const views = [
+        'view-home', 
+        'view-admin-choice', 
+        'view-farmer-auth', 
+        'view-farmer-reg', 
+        'view-farmer-tracker', 
+        'view-admin-auth', 
+        'view-super-auth', 
+        'view-admin', 
+        'view-super-admin'
+      ];
+
+      views.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (id === viewId) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+      });
+
+      currentView = viewId;
+
+      const backBtn = document.getElementById('nav-back-btn');
+      if (backBtn) {
+        if (viewId === 'view-home') {
+          backBtn.classList.add('hidden');
+        } else {
+          backBtn.classList.remove('hidden');
+        }
+      }
+
+      if (viewId === 'view-admin') {
+        updateAdminStats();
+        renderAdminQueueTable();
+      } else if (viewId === 'view-super-admin') {
+        renderSuperDashboard();
+      }
+    }
+
+    const DB = {
+      getBookings: () => JSON.parse(localStorage.getItem('krishi_db_bookings') || '[]'),
+      saveBookings: (data) => localStorage.setItem('krishi_db_bookings', JSON.stringify(data)),
+      
+      getSession: () => JSON.parse(localStorage.getItem('krishi_session_farmer') || 'null'),
+      saveSession: (session) => localStorage.setItem('krishi_session_farmer', JSON.stringify(session)),
+      clearSession: () => localStorage.removeItem('krishi_session_farmer'),
+
+      getTokenCounter: () => parseInt(localStorage.getItem('krishi_token_seq') || '0', 10),
+      saveTokenCounter: (count) => localStorage.setItem('krishi_token_seq', count.toString()),
+
+      getRegisteredPhones: () => JSON.parse(localStorage.getItem('krishi_db_registered_phones') || '{}'),
+      saveRegisteredPhone: (phone, name) => {
+        const registry = DB.getRegisteredPhones();
+        registry[phone] = name;
+        localStorage.setItem('krishi_db_registered_phones', JSON.stringify(registry));
+      },
+
+      getWorkers: () => {
+        const defaultWorkers = [
+          { id: "WRK-101", name: "Inspector Dilip Varma", center: "Gandhinagar", email: "dilip@apmc.gujarat.gov.in", clearance: "Chief Weigher", key: "apmc@2026", status: "Active" },
+          { id: "WRK-102", name: "Kiran R. Patel", center: "Ahmedabad", email: "kiran@apmc.gujarat.gov.in", clearance: "QC & DBT Officer", key: "ahmed@2026", status: "Active" },
+          { id: "WRK-103", name: "Mansukhbhai Desai", center: "Rajkot", email: "mansukh@apmc.gujarat.gov.in", clearance: "Weighment Operator", key: "rajkot@2026", status: "Active" },
+          { id: "WRK-104", name: "Pooja V. Solanki", center: "Surat", email: "pooja@apmc.gujarat.gov.in", clearance: "Queue Supervisor", key: "surat@2026", status: "Active" }
+        ];
+        const stored = localStorage.getItem('krishi_db_workers');
+        if (!stored) {
+          localStorage.setItem('krishi_db_workers', JSON.stringify(defaultWorkers));
+          return defaultWorkers;
+        }
+        return JSON.parse(stored);
+      }
+    };
+
+    let bookings = DB.getBookings();
+    let farmerProfile = DB.getSession(); 
+    let currentFarmerId = null;
+    let staffProfile = null;
+    let selectedMandi = "";
+    let currentView = 'view-home';
+    let currentLang = 'hi';
+    let isElderMode = false;
+    let superHorizon = 'day';
+    let superAdminMarket = 'Gandhinagar';
+
+    const MSP_RATES = {
+      'Wheat': 23, 'Rice': 22, 'Cotton': 71, 'Maize': 21,
+      'Bajra': 25, 'Jowar': 31, 'Sugarcane': 3.5
+    };
+
+    // Allowed Time Slots Array
+    const ALLOWED_TIME_SLOTS = [
+      "8-9am", "9-10am", "10-11am", "11am-12noon", 
+      "12-1pm", "2-3pm", "3-4pm", "4-5pm", 
+      "5-6pm", "6-7pm", "7-8pm"
+    ];
+
+    const translations = {
+      en: {
+        title: "KrishiSetu", elderMode: "Elder Mode", smsAlerts: "SMS Alerts",
+        welcomeTitle: "Welcome to KrishiSetu", welcomeSub: "Unified Procurement & AI Queue Management",
+        farmerBtn: "Farmer Portal", farmerDesc: "Register, book your slot, and track your live queue status.", enterPortal: "Enter Portal",
+        adminBtn: "Mandi Admin", adminDesc: "Worker portal & Super Admin intelligence console.", staffLogin: "Admin Choices",
+        navAdminBtnText: "Admin Gateway", backHome: "Back to Home", backChoice: "Back to Roles", signOut: "Sign Out",
+        
+        choiceTitle: "Mandi Admin Gateway", choiceSub: "Select your administrative authorization role",
+        choiceWorkerTitle: "Mandi Staff / Worker", choiceWorkerDesc: "Authorized procurement center workers responsible for calling tokens, recording weighment, and authorizing DBT payouts.", choiceWorkerAction: "Worker Sign In",
+        choiceSuperTitle: "Super Admin", choiceSuperBadge: "Single Market Control", choiceSuperDesc: "Select a specific APMC market, enter credentials, and inspect analytics strictly for that single center.", choiceSuperAction: "Super Admin Sign In",
+        
+        authWorkerTitle: "Mandi Worker Portal", authWorkerSub: "Ground Staff Weighment & DBT Desk",
+        lblStaffMandi: "Select Workspace APMC Market", lblStaffEmail: "Official Staff Email", lblStaffPass: "Password", btnStaffSubmit: "Sign In to Mandi Desk", btnStaffQuick: "⚡ 1-Click Worker Login",
+        lblStatTotal: "Total Tokens", lblStatWait: "Waiting", lblStatCounter: "At Counter", lblStatProcessed: "Processed / Paid",
+        lblQueueTitle: "Live Queue Management", lblQueueSub: "Actions taken here instantly update the Farmer's app.",
+        thTokenMandi: "Token & Mandi", thFarmerDetails: "Farmer Details", thEstTime: "Est. Time", thStatus: "Status", thActions: "Actions (QC / Pay)",
+        
+        btnCallCounter: "Call to Counter", btnRejectQc: "Reject", btnApprovePay: "Approve & Pay",
+        statusBooked: "BOOKED", statusWeighed: "WEIGHED", statusPaid: "PAID", statusRejected: "REJECTED",
+        badgeFailedQc: "❌ Failed QC", badgeSettled: "✓ Settled", unitMins: "mins",
+
+        authSuperTitle: "Super Admin Sign In", authSuperSub: "Select Market & Enter Master Key",
+        lblSuperMarket: "APMC Market", lblSuperUser: "Super Admin ID / Email", lblSuperKey: "Security Master Key", btnSuperSubmit: "Open Market Command Center", btnSuperQuick: "⚡ 1-Click Super Admin Login (Gandhinagar)",
+        superHdrTitle: "Market Procurement Command Center", superHdrBadge: "Super Admin",
+        lblHorizon: "Time Horizon:", btnDay: "Day-wise", btnWeek: "Week-wise", btnSeason: "Season-wise (Kharif 2026)",
+        supLblGross: "Gross Procurement", supLblDbt: "DBT Disbursed", supLblDbtSub: "Direct Bank Transfers", supLblWorkers: "Center Workers", supLblWorkersSub: "Assigned to this market", supLblRejects: "QC Rejections", supLblRejectsSub: "Quality fail audits",
+        superTabProc: "Crop Distribution & Time Analysis", superTabWrk: "Market Worker Credentials",
+        lblCropDist: "Crop Distribution", lblLedgerTitle: "Market Transaction Ledger",
+        thLToken: "Token", thLFarmer: "Farmer", thLCrop: "Crop / Qty", thLPayout: "Payment Status", thLStatus: "QC Status",
+        thWId: "Worker ID & Name", thWEmail: "Official Email", thWRole: "Clearance Level", thWKey: "Credential Key", thWStatus: "Status",
+
+        regTitle: "Slot Registration", regSub: "Enter your Name, Mandi, Crop, and Quantity",
+        lblName: "Full Name", lblPhone: "Mobile Number", lblMandi: "Select Mandi", lblCrop: "Crop", lblQty: "Qty (Kg)", btnBook: "Confirm & Book Slot",
+        passTitle: "Digital Procurement Pass", aiPredictionTitle: "AI Wait Time Forecast",
+        trackerTitle: "Live Process Tracker", btnAnother: "Book Another Slot",
+        step1: "Slot Booked", step2: "Crop Weighed & Approved", step3: "Payment Sent to Bank", step3Reject: "QC Failed (Rejected)",
+        waitAdmin: "Waiting for Admin...", success: "Completed successfully.",
+        marketSupply: "other farmers are selling this crop today.",
+        aiDesc: "According to our data, the perfect time to process your {qty}Kg of {crop} is approx {time} minutes.",
+        crops: { "Wheat": "Wheat", "Rice": "Rice", "Cotton": "Cotton", "Maize": "Maize", "Bajra": "Bajra", "Jowar": "Jowar", "Sugarcane": "Sugarcane", "All": "All Crops" },
+        mandis: { "Gandhinagar": "Gandhinagar", "Ahmedabad": "Ahmedabad", "Rajkot": "Rajkot", "Surat": "Surat" }
+      },
+      hi: {
+        title: "कृषि सेतु", elderMode: "बड़ा मोड (Elder)", smsAlerts: "एसएमएस अलर्ट",
+        welcomeTitle: "कृषि सेतु में आपका स्वागत है", welcomeSub: "एकीकृत खरीद और एआई कतार प्रबंधन",
+        farmerBtn: "किसान पोर्टल", farmerDesc: "पंजीकरण करें, स्लॉट बुक करें और कतार की स्थिति देखें।", enterPortal: "पोर्टल में प्रवेश करें",
+        adminBtn: "मंडी एडमिन", adminDesc: "कार्यकर्ता और सुपर एडमिन पोर्टल।", staffLogin: "एडमिन विकल्प",
+        navAdminBtnText: "एडमिन गेटवे", backHome: "वापस मुख्य पृष्ठ", backChoice: "वापस भूमिका चयन", signOut: "लॉग आउट",
+        
+        choiceTitle: "मंडी एडमिन गेटवे", choiceSub: "अपनी प्रशासनिक भूमिका का चयन करें",
+        choiceWorkerTitle: "मंडी कार्यकर्ता / स्टाफ", choiceWorkerDesc: "टोकन कॉल करने, फसल का वजन दर्ज करने और DBT भुगतान स्वीकृत करने के लिए अधिकृत खरीद केंद्र कार्यकर्ता।", choiceWorkerAction: "स्टाफ लॉगिन",
+        choiceSuperTitle: "सुपर एडमिन", choiceSuperBadge: "विशिष्ट बाजार नियंत्रण", choiceSuperDesc: "एक विशिष्ट APMC बाजार चुनें, क्रेडेंशियल्स दर्ज करें और केवल उस केंद्र की खरीद एनालिटिक्स की निगरानी करें।", choiceSuperAction: "सुपर एडमिन लॉगिन",
+        
+        authWorkerTitle: "मंडी कार्यकर्ता पोर्टल", authWorkerSub: "ग्राउंड स्टाफ तौल और DBT डेस्क",
+        lblStaffMandi: "कार्यक्षेत्र APMC बाजार चुनें", lblStaffEmail: "आधिकारिक स्टाफ ईमेल", lblStaffPass: "पासवर्ड", btnStaffSubmit: "मंडी डेस्क पर लॉगिन करें", btnStaffQuick: "⚡ 1-क्लिक कार्यकर्ता लॉगिन",
+        lblStatTotal: "कुल टोकन", lblStatWait: "प्रतीक्षारत", lblStatCounter: "काउंटर पर", lblStatProcessed: "भुगतान संपन्न",
+        lblQueueTitle: "लाइव कतार प्रबंधन", lblQueueSub: "यहां की गई कार्रवाई किसान के ऐप में तुरंत अपडेट होती है।",
+        thTokenMandi: "टोकन और मंडी", thFarmerDetails: "किसान विवरण", thEstTime: "अनुमानित समय", thStatus: "स्थिति", thActions: "कार्यवाही (QC / भुगतान)",
+        
+        btnCallCounter: "काउंटर पर बुलाएं", btnRejectQc: "अस्वीकार", btnApprovePay: "स्वीकृत व भुगतान",
+        statusBooked: "बुक हुआ", statusWeighed: "वजन हुआ", statusPaid: "भुगतान हुआ", statusRejected: "अस्वीकृत",
+        badgeFailedQc: "❌ गुणवत्ता विफल", badgeSettled: "✓ संपन्न", unitMins: "मिनट",
+        
+        authSuperTitle: "सुपर एडमिन लॉगिन", authSuperSub: "बाजार चुनें एवं सुरक्षा मास्टर की दर्ज करें",
+        lblSuperMarket: "APMC बाजार", lblSuperUser: "सुपर एडमिन आईडी / ईमेल", lblSuperKey: "सुरक्षा मास्टर की", btnSuperSubmit: "बाजार कमांड सेंटर खोलें", btnSuperQuick: "⚡ 1-क्लिक सुपर एडमिन लॉगिन (गांधीनगर)",
+        superHdrTitle: "बाजार खरीद कमांड सेंटर", superHdrBadge: "सुपर एडमिन",
+        lblHorizon: "समयावधि:", btnDay: "दैनिक", btnWeek: "साप्ताहिक", btnSeason: "सीजन-वार (खरीफ 2026)",
+        supLblGross: "कुल खरीद मात्रा", supLblDbt: "डीबीटी भुगतान", supLblDbtSub: "सीधे बैंक खाते में", supLblWorkers: "केन्द्र कार्यकर्ता", supLblWorkersSub: "इस बाजार पर नियुक्त", supLblRejects: "QC अस्वीकृतियां", supLblRejectsSub: "गुणवत्ता विफलता ऑडिट",
+        superTabProc: "फसल वितरण एवं समय विश्लेषण", superTabWrk: "बाजार कार्यकर्ता क्रेडेंशियल्स",
+        lblCropDist: "फसल वितरण", lblLedgerTitle: "बाजार खरीद बहीखाता (Ledger)",
+        thLToken: "टोकन", thLFarmer: "किसान", thLCrop: "फसल / मात्रा", thLPayout: "भुगतान स्थिति", thLStatus: "गुणवत्ता स्थिति",
+        thWId: "कार्यकर्ता आईडी और नाम", thWEmail: "आधिकारिक ईमेल", thWRole: "भूमिका / स्तर", thWKey: "क्रेडेंशियल कुंजी", thWStatus: "स्थिति",
+
+        regTitle: "स्लॉट पंजीकरण", regSub: "अपना नाम, मंडी, फसल और मात्रा दर्ज करें",
+        lblName: "पूरा नाम", lblPhone: "मोबाइल नंबर", lblMandi: "मंडी चुनें", lblCrop: "फसल", lblQty: "मात्रा (किलो)", btnBook: "स्लॉट बुक करें",
+        passTitle: "डिजिटल खरीद पास", aiPredictionTitle: "एआई प्रतीक्षा समय अनुमान",
+        trackerTitle: "लाइव ट्रैकर", btnAnother: "दूसरा स्लॉट बुक करें",
+        step1: "स्लॉट बुक हो गया", step2: "फसल का वजन हो गया", step3: "बैंक में भुगतान भेजा गया", step3Reject: "गुणवत्ता विफल (अस्वीकृत)",
+        waitAdmin: "एडमिन का इंतज़ार...", success: "सफलतापूर्वक पूरा हुआ।",
+        marketSupply: "अन्य किसान आज यह फसल बेच रहे हैं।",
+        aiDesc: "हमारे डेटा के अनुसार, आपके {qty} किलो {crop} की प्रक्रिया में लगभग {time} मिनट का समय लगेगा।",
+        crops: { "Wheat": "गेहूं", "Rice": "चावल", "Cotton": "कपास", "Maize": "मक्का", "Bajra": "बाजरा", "Jowar": "ज्वार", "Sugarcane": "गन्ना", "All": "सभी फसलें" },
+        mandis: { "Gandhinagar": "गांधीनगर", "Ahmedabad": "अहमदाबाद", "Rajkot": "राजकोट", "Surat": "सूरत" }
+      },
+      gu: {
+        title: "કૃષિ સેતુ", elderMode: "મોટો મોડ", smsAlerts: "SMS ચેતવણીઓ",
+        welcomeTitle: "કૃષિ સેતુમાં સ્વાગત છે", welcomeSub: "એકીકૃત ખરીદી અને એઆઈ કતાર મેનેજમેન્ટ",
+        farmerBtn: "ખેડૂત પોર્ટલ", farmerDesc: "નોંધણી કરો, સ્લોટ બુક કરો અને કતારની સ્થિતિ જુઓ.", enterPortal: "પ્રોજેક્ટમાં પ્રવેશ કરો",
+        adminBtn: "મંડી એડમિન", adminDesc: "કાર્યકર અને સુપર એડમિન પોર્ટલ.", staffLogin: "એડમિન વિકલ્પો",
+        navAdminBtnText: "એડમિન ગેટવે", backHome: "મુખ્ય પૃષ્ઠ પર પાછા", backChoice: "ભૂમિકા પસંદગી પર પાછા", signOut: "સાઇન આઉટ",
+        
+        choiceTitle: "મંડી એડમિન ગેટવે", choiceSub: "તમારી વહીવટી અધિકૃત ભૂમિકા પસંદ કરો",
+        choiceWorkerTitle: "મંડી સ્ટાફ / કાર્યકર", choiceWorkerDesc: "ટોકન બોલાવવા, વજન નોંધવા અને DBT ચુકવણી મંજૂર કરવા માટે અધિકૃત ખરીદ કેન્દ્ર સ્ટાફ.", choiceWorkerAction: "સ્ટાફ લૉગિન",
+        choiceSuperTitle: "સુપર એડમિન", choiceSuperBadge: "વિશિષ્ટ બજાર નિયંત્રણ", choiceSuperDesc: "ચોક્કસ APMC બજાર પસંદ કરો, ઓળખપત્રો દાખલ કરો અને ફક્ત તે કેન્દ્રની ખરીદી તપાસો.", choiceSuperAction: "સુપર એડમિન લૉગિન",
+        
+        authWorkerTitle: "મંડી કાર્યકર પોર્ટલ", authWorkerSub: "ગ્રાઉન્ડ સ્ટાફ વજન અને DBT ડેસ્ક",
+        lblStaffMandi: "કાર્યક્ષેત્ર APMC બજાર પસંદ કરો", lblStaffEmail: "સત્તાવાર સ્ટાફ ઇમેઇલ", lblStaffPass: "પાસવર્ડ", btnStaffSubmit: "મંડી ડેસ્ક પર લૉગિન કરો", btnStaffQuick: "⚡ ૧-ક્લિક કાર્યકર લૉગિન",
+        lblStatTotal: "કુલ ટોકન", lblStatWait: "પ્રતીક્ષારત", lblStatCounter: "કાઉન્ટર પર", lblStatProcessed: "ચુકવણી સંપન્ન",
+        lblQueueTitle: "લાઇવ કતાર વ્યવસ્થાપન", lblQueueSub: "અહીં લેવાયેલા પગલાં તરત જ ખેડૂતના ફોનમાં અપડેટ થાય છે.",
+        thTokenMandi: "ટોકન અને મંડી", thFarmerDetails: "ખેડૂત વિગતો", thEstTime: "અંદાજિત સમય", thStatus: "સ્થિતિ", thActions: "કાર્યવાહી (QC / ચૂકવણી)",
+        
+        btnCallCounter: "કાઉન્ટર પર બોલાવો", btnRejectQc: "નકારો", btnApprovePay: "મંજૂર અને ચૂકવો",
+        statusBooked: "બુક થયેલ", statusWeighed: "વજન થયેલ", statusPaid: "ચૂકવેલ", statusRejected: "નકારાયેલ",
+        badgeFailedQc: "❌ ગુણવત્તા નિષ્ફળ", badgeSettled: "✓ સંપન્ન", unitMins: "મિનિટ",
+        
+        authSuperTitle: "સુપર એડમિન લૉગિન", authSuperSub: "બજાર પસંદ કરો અને માસ્ટર કી દાખલ કરો",
+        lblSuperMarket: "APMC બજાર", lblSuperUser: "સુપર એડમિન આઈડી / ઈમેલ", lblSuperKey: "સુરક્ષા માસ્ટર કી", btnSuperSubmit: "બજાર કમાન્ડ કન્સોલ ખોલો", btnSuperQuick: "⚡ ૧-ક્લિક સુપર એડમિન લૉગિન (ગાંધીનગર)",
+        superHdrTitle: "બજાર ખરીદ કમાન્ડ સેન્ટર", superHdrBadge: "સુપર એડમિન",
+        lblHorizon: "સમયગાળો:", btnDay: "દૈનિક", btnWeek: "સાપ્તાહિક", btnSeason: "સીઝન-વાર (ખરીફ ૨૦૨૬)",
+        supLblGross: "કુલ ખરીદ જથ્થો", supLblDbt: "DBT ચૂકવવામાં આવેલ", supLblDbtSub: "સીધા બેંક ખાતામાં", supLblWorkers: "કેન્દ્ર કાર્યકર", supLblWorkersSub: "આ બજાર પર નિયુક્ત", supLblRejects: "QC અસ્વીકાર", supLblRejectsSub: "ગુણવત્તા નિષ્ફળતા ઓડિટ",
+        superTabProc: "પાક વિતરણ અને સમય વિશ્લેષણ", superTabWrk: "બજાર કાર્યકર ઓળખપત્રો",
+        lblCropDist: "પાક વિતરણ", lblLedgerTitle: "બજાર વ્યવહાર લેજર",
+        thLToken: "ટોકન", thLFarmer: "ખેડૂત", thLCrop: "પાક / જથ્થો", thLPayout: "ચુકવણી સ્થિતિ", thLStatus: "QC સ્થિતિ",
+        thWId: "કાર્યકર આઈડી અને નામ", thWEmail: "સત્તાવાર ઇમેઇલ", thWRole: "ક્લિયરન્સ સ્તર", thWKey: "ક્રેડેન્શિયલ કી", thWStatus: "સ્થિતિ",
+
+        regTitle: "સ્લોટ નોંધણી", regSub: "તમારું નામ, મંડી, પાક અને જથ્થો દાખલ કરો",
+        lblName: "પૂરું નામ", lblPhone: "મોબાઇલ નંબર", lblMandi: "મંડી પસંદ કરો", lblCrop: "પાક", lblQty: "જથ્થો (કિલો)", btnBook: "સ્લોટ બુક કરો",
+        passTitle: "ડિજિટલ પાસ", aiPredictionTitle: "AI સમય અંદાજ",
+        trackerTitle: "લાઇવ ટ્રેકર", btnAnother: "બીજો સ્લોટ બુક કરો",
+        step1: "સ્લોટ બુક થઈ ગયો", step2: "પાકનું વજન થઈ ગયું", step3: "બેંકમાં પેમેન્ટ મોકલાયું", step3Reject: "ગુણવત્તા નિષ્ફળ (નકારવામાં આવ્યું)",
+        waitAdmin: "એડમિનની રાહ જોવાય છે...", success: "સફળતાપૂર્વક પૂર્ણ.",
+        marketSupply: "અન્ય ખેડૂતો આજે આ પાક વેચી રહ્યા છે.",
+        aiDesc: "અમારા ડેટા મુજબ, તમારા {qty} કિલો {crop} ની પ્રક્રિયામાં લગભગ {time} મિનિટ લાગશે.",
+        crops: { "Wheat": "ઘઉં", "Rice": "ચોખા", "Cotton": "કપાસ", "Maize": "મકાઈ", "Bajra": "બાજરી", "Jowar": "જુવાર", "Sugarcane": "શેરડી", "All": "બધા પાક" },
+        mandis: { "Gandhinagar": "ગાંધીનગર", "Ahmedabad": "અમદાવાદ", "Rajkot": "રાજકોટ", "Surat": "સુરત" }
+      },
+      te: {
+        title: "కృషి సేతు", elderMode: "పెద్ద మోడ్", smsAlerts: "SMS హెచ్చరికలు",
+        welcomeTitle: "కృషి సేతుకు స్వాగతం", welcomeSub: "కొనుగోలు & AI క్యూ నిర్వహణ",
+        farmerBtn: "రైతు పోర్టల్", farmerDesc: "నమోదు చేయండి, స్లాట్ బుక్ చేయండి మరియు క్యూ స్థితిని చూడండి.", enterPortal: "పోర్టల్ ప్రవేశించండి",
+        adminBtn: "మండీ అడ్మిన్", adminDesc: "వర్కర్ మరియు సూపర్ అడ్మిన్ పోర్టల్.", staffLogin: "అడ్మిన్ ఎంపికలు",
+        navAdminBtnText: "అడ్మిన్ గేట్‌వే", backHome: "హోమ్‌కు తిరిగి వెళ్ళు", backChoice: "రోల్ ఎంపికకు తిరిగి వెళ్ళు", signOut: "లాగ్ అవుట్",
+        
+        choiceTitle: "మండీ అడ్మిన్ గేట్‌వే", choiceSub: "మీ అధికారిక పాత్రను ఎంచుకోండి",
+        choiceWorkerTitle: "మండీ సిబ్బంది / వర్కర్", choiceWorkerDesc: "టోకెన్లు పిలవడం, తూకం వేయడం మరియు DBT చెల్లింపులను ఆమోదించడానికి అధికారం కలిగిన సిబ్బంది.", choiceWorkerAction: "వర్కర్ సైన్ ఇన్",
+        choiceSuperTitle: "సూపర్ అడ్మిన్", choiceSuperBadge: "ప్రత్యేక మార్కెట్ నియంత్రణ", choiceSuperDesc: "నిర్దిష్ట APMC మార్కెట్‌ను ఎంచుకోండి, ఆధారాలను నమోదు చేయండి మరియు ఆ కేంద్రం విశ్లేషణలను మాత్రమే చూడండి.", choiceSuperAction: "సూపర్ అడ్మిన్ సైన్ ఇన్",
+        
+        authWorkerTitle: "మండీ వర్కర్ పోర్టల్", authWorkerSub: "తూకం మరియు DBT డెస్క్",
+        lblStaffMandi: "పనిచేసే APMC మార్కెట్‌ను ఎంచుకోండి", lblStaffEmail: "అధికారిక ఈమెయిల్", lblStaffPass: "పాస్‌వర్డ్", btnStaffSubmit: "డెస్క్‌కు లాగిన్ చేయండి", btnStaffQuick: "⚡ 1-క్లిక్ వర్కర్ లాగిನ್",
+        lblStatTotal: "మొత్తం టోకెన్లు", lblStatWait: "వేచి ఉన్నారు", lblStatCounter: "కౌంటర్ వద్ద", lblStatProcessed: "చెల్లింపు పూర్తయింది",
+        lblQueueTitle: "లైవ్ క్యూ నిర్వహణ", lblQueueSub: "ఇక్కడ చేసే చర్యలు రైతు యాప్‌లో వెంటనే నవీకరించబడతాయి.",
+        thTokenMandi: "టోకెన్ & మండీ", thFarmerDetails: "రైతు వివరాలు", thEstTime: "అంచనా సమయం", thStatus: "స్థితి", thActions: "చర్యలు (QC / చెల్లింపు)",
+        
+        btnCallCounter: "కౌంటర్‌కు పిలవండి", btnRejectQc: "తిరస్కరించు", btnApprovePay: "ఆమోదించి చెల్లించండి",
+        statusBooked: "బుక్ చేయబడింది", statusWeighed: "తూకం వేయబడింది", statusPaid: "చెల్లించబడింది", statusRejected: "తిరస్కరించబడింది",
+        badgeFailedQc: "❌ నాణ్యత లోపం", badgeSettled: "✓ పూర్తయింది", unitMins: "నిమిషాలు",
+
+        authSuperTitle: "సూపర్ అడ్మిన్ సైన్ ఇన్", authSuperSub: "మార్కెట్ ఎంచుకోండి మరియు మాస్టర్ కీని నమోదు చేయండి",
+        lblSuperMarket: "APMC మార్కెట్", lblSuperUser: "సూపర్ అడ్మిన్ ID", lblSuperKey: "మాస్టర్ కీ", btnSuperSubmit: "మార్కెట్ కమాండ్ సెంటర్ తెరవండి", btnSuperQuick: "⚡ 1-క్లిక్ సూపర్ అడ్మిన్ లాగిన్",
+        superHdrTitle: "మార్కెట్ సేకరణ కమాండ్ సెంటర్", superHdrBadge: "సూపర్ అడ్మిన్",
+        lblHorizon: "సమయం:", btnDay: "రోజువారీ", btnWeek: "వారంవారీ", btnSeason: "సీజన్ వారీగా",
+        supLblGross: "మొత్తం సేకరణ", supLblDbt: "DBT పంపిణీ", supLblDbtSub: "నేరుగా బ్యాంక్ ఖాతాకు", supLblWorkers: "కేంద్ర కార్మికులు", supLblWorkersSub: "ఈ మార్కెట్‌లో నియమితులైనారు", supLblRejects: "QC తిరస్కరణలు", supLblRejectsSub: "నాణ్యత తనిఖీ",
+        superTabProc: "పంటల పంపిణీ", superTabWrk: "మార్కెట్ సిబ్బంది వివరాలు",
+        lblCropDist: "పంటల పంపిణీ", lblLedgerTitle: "మార్కెట్ లెడ్జర్",
+        thLToken: "టోకెన్", thLFarmer: "రైతు", thLCrop: "పంట / పరిమాణం", thLPayout: "చెల్లింపు స్థితి", thLStatus: "QC స్థితి",
+        thWId: "వర్కర్ ID & పేరు", thWEmail: "ఈమెయిల్", thWRole: "హోదా", thWKey: "కీ", thWStatus: "స్థితి",
+
+        regTitle: "స్లాట్ రిజిస్ట్రేషన్", regSub: "మీ పేరు, మండి, పంట మరియు పరిమాణాన్ని నమోదు చేయండి",
+        lblName: "పూర్తి పేరు", lblPhone: "మొబైల్ నంబర్", lblMandi: "మండి ఎంచుకోండి", lblCrop: "పంట", lblQty: "పరిమాణం (కిలో)", btnBook: "స్లాట్ బుక్ చేయండి",
+        passTitle: "డిజిటల్ పాస్", aiPredictionTitle: "AI సమయం అంచనా",
+        trackerTitle: "లైవ్ ట్రాకర్", btnAnother: "మరో స్లాట్ బుక్ చేయండి",
+        step1: "స్లాట్ బుక్ చేయబడింది", step2: "పంట తూకం వేయబడింది", step3: "చెల్లింపు పంపబడింది", step3Reject: "నాణ్యత విఫలమైంది (తిరస్కరించబడింది)",
+        waitAdmin: "అడ్మిన్ కోసం వేచి ఉంది...", success: "విజయవంతంగా పూర్తయింది.",
+        marketSupply: "ఇతర రైతులు నేడు ఈ పంటను అమ్ముతున్నారు.",
+        aiDesc: "మా డేటా ప్రకారం, మీ {qty}కిలోల {crop} ప్రాసెస్ చేయడానికి సుమారు {time} నిమిషాలు పడుతుంది.",
+        crops: { "Wheat": "గోధుమ", "Rice": "బియ్యం", "Cotton": "పత్తి", "Maize": "మొక్కజొన్న", "Bajra": "సజ్జలు", "Jowar": "జొన్నలు", "Sugarcane": "చెరకు", "All": "అన్ని పంటలు" },
+        mandis: { "Gandhinagar": "गांधीनगर", "Ahmedabad": "अहमदाबाद", "Rajkot": "राजकोट", "Surat": "સુરત" }
+      },
+      ta: {
+        title: "கிருஷி சேது", elderMode: "பெரிய எழுத்து", smsAlerts: "SMS எச்சரிக்கைகள்",
+        welcomeTitle: "கிருஷி சேதுவிற்கு வரவேற்கிறோம்", welcomeSub: "கொள்முதல் & AI வரிசை மேலாண்மை",
+        farmerBtn: "விவசாயி போர்டல்", farmerDesc: "பதிவு செய்து, ஸ்லாட்டை முன்பதிவு செய்து வரிசை நிலையை பார்க்கவும்.", enterPortal: "உள்ளே செல்லவும்",
+        adminBtn: "மண்டி நிர்வாகி", adminDesc: "பணியாளர் மற்றும் சூப்பர் நிர்வாகி தளம்.", staffLogin: "நிர்வாகி தேர்வுகள்",
+        navAdminBtnText: "நிர்வாக வாயில்", backHome: "முகப்புக்கு திரும்பவும்", backChoice: "பங்கு தேர்வுக்கு திரும்பவும்", signOut: "வெளியேறு",
+        
+        choiceTitle: "மண்டி நிர்வாக வாயில்", choiceSub: "உங்கள் நிர்வாக பங்கைத் தேர்ந்தெடுக்கவும்",
+        choiceWorkerTitle: "மண்டி பணியாளர்", choiceWorkerDesc: "டோக்கன்களை அழைப்பது, எடை பதிவு செய்வது மற்றும் DBT கொடுப்பனவுகளை அனுமதிக்கும் களப் பணியாளர்கள்.", choiceWorkerAction: "பணியாளர் உள்நுழைவு",
+        choiceSuperTitle: "சூப்பர் நிர்வாகி", choiceSuperBadge: "தனி சந்தை கட்டுப்பாடு", choiceSuperDesc: "ஒரு குறிப்பிட்ட APMC சந்தையைத் தேர்ந்தெடுத்து, அந்த மையத்திற்கான பகுப்பாய்வுகளை மட்டும் பார்க்கவும்.", choiceSuperAction: "சூப்பர் நிர்வாகி உள்நுழைவு",
+        
+        authWorkerTitle: "மண்டி பணியாளர் தளம்", authWorkerSub: "எடை மற்றும் DBT மேசை",
+        lblStaffMandi: "பணியிட APMC சந்தையைத் தேர்ந்தெடுக்கவும்", lblStaffEmail: "அதிகாரப்பூர்வ மின்னஞ்சல்", lblStaffPass: "கடவுச்சொல்", btnStaffSubmit: "மேசைக்கு உள்நுழையவும்", btnStaffQuick: "⚡ 1-கிளிக் பணியாளர் உள்நுழைவு",
+        lblStatTotal: "மொத்த டோக்கன்கள்", lblStatWait: "காத்திருப்பு", lblStatCounter: "கவுண்டரில்", lblStatProcessed: "கொடுக்கப்பட்டது",
+        lblQueueTitle: "நேரடி வரிசை மேலாண்மை", lblQueueSub: "இங்கு செய்யப்படும் செயல்கள் விவசாயியின் செயலியில் உடனே மாறும்.",
+        thTokenMandi: "டோக்கன் & மண்டி", thFarmerDetails: "விவசாயி விவரங்கள்", thEstTime: "மதிப்பிடப்பட்ட நேரம்", thStatus: "நிலை", thActions: "செயல்கள் (QC / பணம்)",
+        
+        btnCallCounter: "கவுண்டருக்கு அழைக்கவும்", btnRejectQc: "நிராகரி", btnApprovePay: "ஒப்புதல் அளித்து செலுத்தவும்",
+        statusBooked: "முன்பதிவு", statusWeighed: "எடை முடிந்தது", statusPaid: "பணம் தரப்பட்டது", statusRejected: "நிராகரிக்கப்பட்டது",
+        badgeFailedQc: "❌ QC தோல்வி", badgeSettled: "✓ முடிந்தது", unitMins: "நிமிடங்கள்",
+        
+        authSuperTitle: "சூப்பர் நிர்வாகி உள்நுழைவு", authSuperSub: "சந்தையைத் தேர்ந்தெடுத்து விசையை உள்ளிடவும்",
+        lblSuperMarket: "APMC சந்தை", lblSuperUser: "சூப்பர் நிர்வாகி ID", lblSuperKey: "முக்கிய கடவுச்சொல்", btnSuperSubmit: "சந்தை கட்டுப்பாட்டு மையத்தைத் திற", btnSuperQuick: "⚡ 1-கிளிக் உள்நுழைவு (காந்திநகர்)",
+        superHdrTitle: "சந்தை கொள்முதல் கட்டளை மையம்", superHdrBadge: "சூப்பர் நிர்வாகி",
+        lblHorizon: "கால அளவு:", btnDay: "தினசரி", btnWeek: "வாராந்திர", btnSeason: "பருவகாலம் (காரீஃப் 2026)",
+        supLblGross: "மொத்த கொள்முதல்", supLblDbt: "DBT பணம்", supLblDbtSub: "நேரடி வங்கி பரிமாற்றம்", supLblWorkers: "மைய பணியாளர்கள்", supLblWorkersSub: "இந்த சந்தையில் நியமிக்கப்பட்டவர்கள்", supLblRejects: "QC நிராகரிப்புகள்", supLblRejectsSub: "தர தணிக்கை",
+        superTabProc: "பயிர் விநியோகம்", superTabWrk: "சந்தை பணியாளர் விபரங்கள்",
+        lblCropDist: "பயிர் விநியோகம்", lblLedgerTitle: "சந்தை கணக்கு",
+        thLToken: "டோக்கன்", thLFarmer: "விவசாயி", thLCrop: "பயிர் / அளவு", thLPayout: "செலுத்தல் நிலை", thLStatus: "QC நிலை",
+        thWId: "பணியாளர் ID & பெயர்", thWEmail: "மின்னஞ்சல்", thWRole: "பங்கு", thWKey: "சாவி", thWStatus: "நிலை",
+
+        regTitle: "ஸ்லாட் பதிவு", regSub: "உங்கள் பெயர், મંડી, பயிர் மற்றும் அளவை உள்ளிடவும்",
+        lblName: "முழு பெயர்", lblPhone: "கைபேசி எண்", lblMandi: "மண்டியைத் தேர்ந்தெடுக்கவும்", lblCrop: "பயிர்", lblQty: "அளவு (கிலோ)", btnBook: "முன்பதிவு செய்யவும்",
+        passTitle: "டிஜிட்டல் பாஸ்", aiPredictionTitle: "AI நேர கணிப்பு",
+        trackerTitle: "நேரலை டிராக்கர்", btnAnother: "இன்னொரு ஸ்லாட்டை பதிவு செய்யவும்",
+        step1: "ஸ்லாட் பதிவு செய்யப்பட்டது", step2: "பயிர் எடை போடப்பட்டது", step3: "பணம் அனுப்பப்பட்டது", step3Reject: "தரம் தோல்வி (நிராகரிக்கப்பட்டது)",
+        waitAdmin: "நிர்வாகிக்காக காத்திருக்கிறது...", success: "வெற்றிகரமாக முடிந்தது.",
+        marketSupply: "மற்ற விவசாயிகள் இன்று இந்த பயிரை விற்கின்றனர்.",
+        aiDesc: "எங்கள் தரவின்படி, உங்கள் {qty}கிலோ {crop} செயல்முறைக்கு சுமார் {time} நிமிடங்கள் ஆகும்.",
+        crops: { "Wheat": "கோதுமை", "Rice": "அரிசி", "Cotton": "பருத்தி", "Maize": "மக்காச்சோளம்", "Bajra": "கம்பு", "Jowar": "சோளம்", "Sugarcane": "கரும்பு", "All": "அனைத்து பயிர்கள்" },
+        mandis: { "Gandhinagar": "காந்திநகர்", "Ahmedabad": "அகமதாபாத்", "Rajkot": "ராஜ்கோட்", "Surat": "சூరத்" }
+      }
+    };
+
+    function changeLanguage(lang) {
+      currentLang = lang;
+      const t = translations[lang] || translations.en;
+
+      document.getElementById('nav-app-title').textContent = t.title;
+      document.getElementById('elder-mode-text').textContent = t.elderMode;
+      const smsLbl = document.getElementById('nav-sms-lbl');
+      if (smsLbl) smsLbl.textContent = t.smsAlerts;
+
+      document.getElementById('home-welcome-title').textContent = t.welcomeTitle;
+      document.getElementById('home-welcome-sub').textContent = t.welcomeSub;
+      document.getElementById('home-farmer-btn').textContent = t.farmerBtn;
+      document.getElementById('home-farmer-desc').textContent = t.farmerDesc;
+      document.getElementById('home-enter-portal').textContent = t.enterPortal;
+      document.getElementById('home-admin-btn').textContent = t.adminBtn;
+      document.getElementById('home-admin-desc').textContent = t.adminDesc;
+      document.getElementById('home-admin-action').textContent = t.staffLogin;
+      document.getElementById('nav-admin-btn-text').textContent = t.navAdminBtnText;
+
+      document.querySelectorAll('.lbl-back-home').forEach(el => el.textContent = t.backHome);
+      document.querySelectorAll('.lbl-sign-out').forEach(el => el.textContent = t.signOut);
+      const backChoice1 = document.getElementById('lbl-auth-back-choice');
+      if (backChoice1) backChoice1.textContent = t.backChoice;
+      document.querySelectorAll('.lbl-auth-back-choice-2').forEach(el => el.textContent = t.backChoice);
+
+      if (document.getElementById('choice-title')) document.getElementById('choice-title').textContent = t.choiceTitle;
+      if (document.getElementById('choice-sub')) document.getElementById('choice-sub').textContent = t.choiceSub;
+      if (document.getElementById('choice-worker-title')) document.getElementById('choice-worker-title').textContent = t.choiceWorkerTitle;
+      if (document.getElementById('choice-worker-desc')) document.getElementById('choice-worker-desc').textContent = t.choiceWorkerDesc;
+      if (document.getElementById('choice-worker-action')) document.getElementById('choice-worker-action').textContent = t.choiceWorkerAction;
+      if (document.getElementById('choice-super-title')) document.getElementById('choice-super-title').textContent = t.choiceSuperTitle;
+      if (document.getElementById('choice-super-badge')) document.getElementById('choice-super-badge').textContent = t.choiceSuperBadge;
+      if (document.getElementById('choice-super-desc')) document.getElementById('choice-super-desc').textContent = t.choiceSuperDesc;
+      if (document.getElementById('choice-super-action')) document.getElementById('choice-super-action').textContent = t.choiceSuperAction;
+
+      // Farmer Auth
+      if (document.getElementById('auth-farmer-title')) document.getElementById('auth-farmer-title').textContent = t.regTitle;
+      if (document.getElementById('auth-farmer-sub')) document.getElementById('auth-farmer-sub').textContent = t.regSub;
+      if (document.getElementById('lbl-auth-name')) document.getElementById('lbl-auth-name').textContent = t.lblName;
+      if (document.getElementById('lbl-auth-phone')) document.getElementById('lbl-auth-phone').textContent = t.lblPhone;
+      if (document.getElementById('btn-get-otp')) document.getElementById('btn-get-otp').textContent = "Get Verification OTP";
+      if (document.getElementById('otp-info-msg')) document.getElementById('otp-info-msg').textContent = "An OTP has been sent to your mobile.";
+      if (document.getElementById('lbl-enter-otp')) document.getElementById('lbl-enter-otp').textContent = "Enter 4-Digit OTP";
+      if (document.getElementById('btn-verify-otp')) document.getElementById('btn-verify-otp').textContent = "Verify & Login";
+      if (document.getElementById('btn-back-edit')) document.getElementById('btn-back-edit').textContent = "← Back to edit details";
+
+      if (document.getElementById('auth-worker-title')) document.getElementById('auth-worker-title').textContent = t.authWorkerTitle;
+      if (document.getElementById('auth-worker-sub')) document.getElementById('auth-worker-sub').textContent = t.authWorkerSub;
+      if (document.getElementById('lbl-staff-mandi')) document.getElementById('lbl-staff-mandi').textContent = t.lblStaffMandi;
+      if (document.getElementById('lbl-staff-email')) document.getElementById('lbl-staff-email').textContent = t.lblStaffEmail;
+      if (document.getElementById('lbl-staff-pass')) document.getElementById('lbl-staff-pass').textContent = t.lblStaffPass;
+      if (document.getElementById('btn-staff-submit')) document.getElementById('btn-staff-submit').textContent = t.btnStaffSubmit;
+      if (document.getElementById('btn-staff-quick')) document.getElementById('btn-staff-quick').textContent = t.btnStaffQuick;
+
+      if (document.getElementById('lbl-stat-total')) document.getElementById('lbl-stat-total').textContent = t.lblStatTotal;
+      if (document.getElementById('lbl-stat-wait')) document.getElementById('lbl-stat-wait').textContent = t.lblStatWait;
+      if (document.getElementById('lbl-stat-counter')) document.getElementById('lbl-stat-counter').textContent = t.lblStatCounter;
+      if (document.getElementById('lbl-stat-processed')) document.getElementById('lbl-stat-processed').textContent = t.lblStatProcessed;
+      if (document.getElementById('lbl-queue-title')) document.getElementById('lbl-queue-title').textContent = t.lblQueueTitle;
+      if (document.getElementById('lbl-queue-sub')) document.getElementById('lbl-queue-sub').textContent = t.lblQueueSub;
+      if (document.getElementById('th-token-mandi')) document.getElementById('th-token-mandi').textContent = t.thTokenMandi;
+      if (document.getElementById('th-farmer-details')) document.getElementById('th-farmer-details').textContent = t.thFarmerDetails;
+      if (document.getElementById('th-est-time')) document.getElementById('th-est-time').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-1"></i> ${t.thEstTime}`;
+      if (document.getElementById('th-status')) document.getElementById('th-status').textContent = t.thStatus;
+      if (document.getElementById('th-actions')) document.getElementById('th-actions').textContent = t.thActions;
+
+      if (document.getElementById('auth-super-title')) document.getElementById('auth-super-title').textContent = t.authSuperTitle;
+      if (document.getElementById('auth-super-sub')) document.getElementById('auth-super-sub').textContent = t.authSuperSub;
+      if (document.getElementById('lbl-super-market')) document.getElementById('lbl-super-market').textContent = t.lblSuperMarket;
+      if (document.getElementById('lbl-super-user')) document.getElementById('lbl-super-user').textContent = t.lblSuperUser;
+      if (document.getElementById('lbl-super-key')) document.getElementById('lbl-super-key').textContent = t.lblSuperKey;
+      if (document.getElementById('btn-super-submit')) document.getElementById('btn-super-submit').textContent = t.btnSuperSubmit;
+      if (document.getElementById('btn-super-quick')) document.getElementById('btn-super-quick').textContent = t.btnSuperQuick;
+
+      if (document.getElementById('super-hdr-title')) document.getElementById('super-hdr-title').textContent = t.superHdrTitle;
+      if (document.getElementById('super-hdr-badge')) document.getElementById('super-hdr-badge').textContent = t.superHdrBadge;
+      if (document.getElementById('lbl-horizon')) document.getElementById('lbl-horizon').textContent = t.lblHorizon;
+      if (document.getElementById('btn-horizon-day')) document.getElementById('btn-horizon-day').textContent = t.btnDay;
+      if (document.getElementById('btn-horizon-week')) document.getElementById('btn-horizon-week').textContent = t.btnWeek;
+      if (document.getElementById('btn-horizon-season')) document.getElementById('btn-horizon-season').textContent = t.btnSeason;
+
+      if (document.getElementById('sup-lbl-gross')) document.getElementById('sup-lbl-gross').textContent = t.supLblGross;
+      if (document.getElementById('sup-lbl-dbt')) document.getElementById('sup-lbl-dbt').textContent = t.supLblDbt;
+      if (document.getElementById('sup-lbl-dbt-sub')) document.getElementById('sup-lbl-dbt-sub').textContent = t.supLblDbtSub;
+      if (document.getElementById('sup-lbl-workers')) document.getElementById('sup-lbl-workers').textContent = t.supLblWorkers;
+      if (document.getElementById('sup-workers-sub')) document.getElementById('sup-workers-sub').textContent = t.supLblWorkersSub;
+      if (document.getElementById('sup-lbl-rejects')) document.getElementById('sup-lbl-rejects').textContent = t.supLblRejects;
+      if (document.getElementById('sup-lbl-rejects-sub')) document.getElementById('sup-lbl-rejects-sub').textContent = t.supLblRejectSub;
+
+      if (document.getElementById('super-tab-label-proc')) document.getElementById('super-tab-label-proc').textContent = t.superTabProc;
+      if (document.getElementById('super-tab-label-wrk')) document.getElementById('super-tab-label-wrk').textContent = t.superTabWrk;
+      if (document.getElementById('lbl-crop-dist')) document.getElementById('lbl-crop-dist').textContent = t.lblCropDist;
+      if (document.getElementById('lbl-ledger-title')) document.getElementById('lbl-ledger-title').textContent = t.lblLedgerTitle;
+      if (document.getElementById('sup-single-title')) document.getElementById('sup-single-title').textContent = "Single Market Control";
+      if (document.getElementById('sup-single-desc')) document.getElementById('sup-single-desc').textContent = "You are currently inspecting and managing records exclusively for this APMC procurement center.";
+      if (document.getElementById('lbl-dir-title')) document.getElementById('lbl-dir-title').textContent = "इस बाजार के नियुक्त फील्ड कर्मी";
+      if (document.getElementById('lbl-dir-sub')) document.getElementById('lbl-dir-sub').textContent = "चुने गए APMC बाजार के लिए अधिकृत प्राधिकारी और क्रेडेंशियल कुंजी।";
+
+      if (document.getElementById('th-l-token')) document.getElementById('th-l-token').textContent = t.thLToken;
+      if (document.getElementById('th-l-farmer')) document.getElementById('th-l-farmer').textContent = t.thLFarmer;
+      if (document.getElementById('th-l-crop')) document.getElementById('th-l-crop').textContent = t.thLCrop;
+      if (document.getElementById('th-l-payout')) document.getElementById('th-l-payout').textContent = t.thLPayout;
+      if (document.getElementById('th-l-status')) document.getElementById('th-l-status').textContent = t.thLStatus;
+
+      if (document.getElementById('th-w-id')) document.getElementById('th-w-id').textContent = t.thWId;
+      if (document.getElementById('th-w-email')) document.getElementById('th-w-email').textContent = t.thWEmail;
+      if (document.getElementById('th-w-role')) document.getElementById('th-w-role').textContent = t.thWRole;
+      if (document.getElementById('th-w-key')) document.getElementById('th-w-key').textContent = t.thWKey;
+      if (document.getElementById('th-w-status')) document.getElementById('th-w-status').textContent = t.thWStatus;
+
+      if (document.getElementById('pass-title')) document.getElementById('pass-title').textContent = t.passTitle;
+      if (document.getElementById('t-lbl-name')) document.getElementById('t-lbl-name').textContent = t.lblName;
+      if (document.getElementById('t-lbl-crop')) document.getElementById('t-lbl-crop').textContent = t.lblCrop;
+      if (document.getElementById('t-ai-title')) document.getElementById('t-ai-title').textContent = t.aiPredictionTitle;
+      if (document.getElementById('tracker-title')) document.getElementById('tracker-title').textContent = t.trackerTitle;
+      if (document.getElementById('step-1-text')) document.getElementById('step-1-text').textContent = t.step1;
+      if (document.getElementById('step-2-text')) document.getElementById('step-2-text').textContent = t.step2;
+      if (document.getElementById('step-3-text')) document.getElementById('step-3-text').textContent = t.step3;
+      if (document.getElementById('btn-another')) document.getElementById('btn-another').textContent = t.btnAnother;
+
+      if (document.getElementById('reg-title')) document.getElementById('reg-title').textContent = t.regTitle;
+      if (document.getElementById('reg-sub')) document.getElementById('reg-sub').textContent = t.regSub;
+      if (document.getElementById('lbl-name')) document.getElementById('lbl-name').textContent = t.lblName;
+      if (document.getElementById('lbl-mandi')) document.getElementById('lbl-mandi').textContent = t.lblMandi;
+      if (document.getElementById('lbl-crop')) document.getElementById('lbl-crop').textContent = t.lblCrop;
+      if (document.getElementById('lbl-qty')) document.getElementById('lbl-qty').textContent = t.lblQty;
+      if (document.getElementById('btn-book')) document.getElementById('btn-book').innerHTML = `<span>${t.btnBook}</span><i class="fa-solid fa-arrow-right text-sm"></i>`;
+
+      document.querySelectorAll('.mandi-name').forEach(el => {
+        const key = el.getAttribute('data-key');
+        if (t.mandis[key]) el.textContent = t.mandis[key];
+      });
+      const selectedMandiBadge = document.getElementById('selected-mandi-badge');
+      if (selectedMandiBadge && selectedMandiBadge.textContent.includes('Selected')) {
+        selectedMandiBadge.textContent = '✓ ' + (t.mandis[selectedMandi] || selectedMandi);
+      }
+
+      document.querySelectorAll('.crop-name').forEach(el => {
+        const key = el.getAttribute('data-key');
+        if (t.crops[key]) el.textContent = t.crops[key];
+      });
+
+      if (currentFarmerId) {
+        const farmer = bookings.find(b => b.id === currentFarmerId);
+        if (farmer) populateTrackerView(farmer);
+      }
+
+      renderAdminQueueTable();
+      if (currentView === 'view-super-admin') {
+        renderSuperDashboard();
+      }
+
+      showToast(`Language switched to ${lang.toUpperCase()}`);
+    }
+
+    // Fixed Farmer Entry Gateway Router with Returning User Login Check
+    function handleFarmerEntry() {
+      const session = DB.getSession();
+      if (session && session.phone) {
+        farmerProfile = session;
+        currentFarmerId = session.activeBookingId || null;
+        if (currentFarmerId) {
+          const booking = bookings.find(b => b.id === currentFarmerId);
+          if (booking && booking.status !== 'PAID' && booking.status !== 'REJECTED') {
+            showView('view-farmer-tracker');
+            populateTrackerView(booking);
+            return;
+          }
+        }
+        document.getElementById('f-name').value = session.name;
+        document.getElementById('f-phone').value = session.phone;
+        renderFarmerHistory(session.phone);
+        showView('view-farmer-reg');
+      } else {
+        showView('view-farmer-auth');
+      }
+    }
+
+    function sendFarmerOtp() {
+      const name = document.getElementById('auth-name').value.trim();
+      const phone = document.getElementById('auth-phone').value.trim();
+      
+      const nameRegex = /^[A-Za-z\s]+$/;
+      if (!name || !nameRegex.test(name)) {
+        showToast('Please enter a valid Name containing only letters and spaces.');
+        return;
+      }
+      if (phone.length < 10) {
+        showToast('Please enter a valid 10-digit Mobile Number.');
+        return;
+      }
+
+      const registeredPhones = DB.getRegisteredPhones();
+      if (registeredPhones[phone] && registeredPhones[phone].toLowerCase() !== name.toLowerCase()) {
+        showToast('This number is already registered under a different name. Please use a unique number.');
+        return;
+      }
+
+      document.getElementById('auth-step-1').classList.add('hidden');
+      document.getElementById('auth-step-2').classList.remove('hidden');
+      showToast('OTP sent: 1234');
+    }
+
+    function verifyFarmerOtp() {
+      const otp = document.getElementById('auth-otp').value.trim();
+      if (otp !== '1234') {
+        showToast('Invalid OTP. Use 1234');
+        return;
+      }
+      const name = document.getElementById('auth-name').value.trim();
+      const phone = document.getElementById('auth-phone').value.trim();
+      
+      DB.saveRegisteredPhone(phone, name);
+
+      farmerProfile = { name, phone };
+      DB.saveSession(farmerProfile);
+
+      document.getElementById('f-name').value = name;
+      document.getElementById('f-phone').value = phone;
+      renderFarmerHistory(phone);
+      showView('view-farmer-reg');
+      showToast('Farmer Verified Successfully!');
+    }
+
+    function resetAuthForm() {
+      document.getElementById('auth-step-2').classList.add('hidden');
+      document.getElementById('auth-step-1').classList.remove('hidden');
+      document.getElementById('auth-otp').value = '';
+    }
+
+    function logoutFarmer() {
+      DB.clearSession();
+      farmerProfile = null;
+      currentFarmerId = null;
+      document.getElementById('auth-name').value = '';
+      document.getElementById('auth-phone').value = '';
+      resetAuthForm();
+      showView('view-home');
+      showToast('Signed out successfully.');
+    }
+
+    function selectMandiChip(mandi) {
+      selectedMandi = mandi;
+      document.querySelectorAll('.mandi-chip').forEach(btn => {
+        if (btn.getAttribute('data-mandi') === mandi) {
+          btn.className = "mandi-chip p-2.5 rounded-xl border-2 border-sky-500 bg-sky-50 text-sky-900 text-xs font-black flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm";
+        } else {
+          btn.className = "mandi-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer transition-all";
+        }
+      });
+      const badge = document.getElementById('selected-mandi-badge');
+      if (badge) {
+        badge.classList.remove('hidden');
+        badge.textContent = "✓ " + mandi;
+      }
+    }
+
+    function selectCropChip(crop) {
+      document.getElementById('f-crop').value = crop;
+      document.querySelectorAll('.crop-chip').forEach(btn => {
+        if (btn.getAttribute('data-crop') === crop) {
+          btn.className = "crop-chip p-2.5 rounded-xl border-2 border-sky-500 bg-sky-50 text-sky-900 text-xs font-black flex flex-col items-center justify-center gap-1 cursor-pointer transition-all shadow-sm";
+        } else {
+          btn.className = "crop-chip p-2.5 rounded-xl border border-beige-200 bg-white hover:bg-sky-50 text-stone-700 text-xs font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-all";
+        }
+      });
+      const badge = document.getElementById('selected-crop-badge');
+      if (badge) {
+        badge.classList.remove('hidden');
+        badge.textContent = "✓ " + crop;
+      }
+      handleCropChange(crop);
+    }
+
+    function handleCropChange(crop) {
+      const qty = parseFloat(document.getElementById('f-qty').value) || 500;
+      const aiBox = document.getElementById('ai-date-box');
+      if (crop && qty > 0) {
+        aiBox.classList.remove('hidden');
+      } else {
+        aiBox.classList.add('hidden');
+      }
+    }
+
+    function bookSlot(dateType, dateLabel) {
+      if (!selectedMandi) {
+        showToast('Please select a Mandi location.');
+        return;
+      }
+      const crop = document.getElementById('f-crop').value;
+      const qty = parseFloat(document.getElementById('f-qty').value);
+      if (!crop || !qty || qty <= 0) {
+        showToast('Please select a crop and enter a valid quantity.');
+        return;
+      }
+
+      let seq = DB.getTokenCounter() + 1;
+      DB.saveTokenCounter(seq);
+      const tokenNo = "#KS" + String(seq).padStart(4, '0');
+
+      // Randomly pick a time slot from the allowed time slots array
+      const randomTimeSlot = ALLOWED_TIME_SLOTS[Math.floor(Math.random() * ALLOWED_TIME_SLOTS.length)];
+
+      const newBooking = {
+        id: 'B_' + Date.now(),
+        token: tokenNo,
+        name: farmerProfile.name,
+        phone: farmerProfile.phone,
+        mandi: selectedMandi,
+        crop: crop,
+        qty: qty,
+        date: dateLabel,
+        timeSlot: randomTimeSlot, // Assigned time slot
+        status: 'BOOKED',
+        estMins: Math.floor(Math.random() * 25) + 15,
+        payout: qty * (MSP_RATES[crop] || 22),
+        timestamp: new Date().toISOString()
+      };
+
+      bookings.unshift(newBooking);
+      DB.saveBookings(bookings);
+
+      farmerProfile.activeBookingId = newBooking.id;
+      DB.saveSession(farmerProfile);
+
+      currentFarmerId = newBooking.id;
+      showView('view-farmer-tracker');
+      populateTrackerView(newBooking);
+      showToast('Slot Booked Successfully! Token: ' + tokenNo);
+    }
+
+    function bookSlotWithSmartDate() {
+      bookSlot('tomorrow', 'Tomorrow');
+    }
+
+    // IMPROVED REALISTIC BARCODE GENERATOR MECHANISM
+    function generateRealisticBarcodeHTML(tokenString) {
+      let seed = 0;
+      for (let i = 0; i < tokenString.length; i++) {
+        seed += tokenString.charCodeAt(i);
+      }
+      
+      const patternWidths = [1, 2, 3, 1, 4, 1, 2, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 4, 1, 2];
+      let html = '';
+      
+      // Left Guard Bars
+      html += `<div style="width: 2px; background: #000; height: 100%;"></div>`;
+      html += `<div style="width: 1px; background: transparent; height: 100%;"></div>`;
+      html += `<div style="width: 3px; background: #000; height: 100%;"></div>`;
+      
+      // Data bars
+      for (let i = 0; i < 32; i++) {
+        const widthFactor = patternWidths[(seed + i * 7) % patternWidths.length];
+        const isDark = (i % 2 === 0) || ((seed + i) % 3 === 0);
+        html += `<div style="width: ${widthFactor}px; background: ${isDark ? '#000' : 'transparent'}; height: 100%;"></div>`;
+      }
+      
+      // Center Guard Bars
+      html += `<div style="width: 1px; background: transparent; height: 100%;"></div>`;
+      html += `<div style="width: 2px; background: #000; height: 100%;"></div>`;
+      html += `<div style="width: 1px; background: #000; height: 100%;"></div>`;
+      html += `<div style="width: 2px; background: #000; height: 100%;"></div>`;
+      html += `<div style="width: 1px; background: transparent; height: 100%;"></div>`;
+
+      // Right Data bars
+      for (let i = 0; i < 32; i++) {
+        const widthFactor = patternWidths[(seed + i * 13) % patternWidths.length];
+        const isDark = (i % 3 === 0) || ((seed + i * 2) % 2 === 0);
+        html += `<div style="width: ${widthFactor}px; background: ${isDark ? '#000' : 'transparent'}; height: 100%;"></div>`;
+      }
+
+      // Right Guard Bars
+      html += `<div style="width: 3px; background: #000; height: 100%;"></div>`;
+      html += `<div style="width: 1px; background: transparent; height: 100%;"></div>`;
+      html += `<div style="width: 2px; background: #000; height: 100%;"></div>`;
+
+      return html;
+    }
+
+    function populateTrackerView(b) {
+      document.getElementById('t-token').textContent = b.token;
+      document.getElementById('t-date-display').textContent = "📅 Date: " + (b.date || "Today");
+      document.getElementById('t-time-display').textContent = "⏰ Time: " + (b.timeSlot || "10-11am");
+      document.getElementById('t-mandi-display').textContent = "📍 " + b.mandi + " APMC";
+      document.getElementById('t-name').textContent = b.name;
+      document.getElementById('t-qty').textContent = b.qty;
+      document.getElementById('t-crop').textContent = b.crop;
+      document.getElementById('t-ai-desc').textContent = `According to our data, the perfect time to process your ${b.qty}Kg of ${b.crop} is approx ${b.estMins} minutes.`;
+      
+      const supplyEl = document.getElementById('t-supply-metric');
+      const count = bookings.filter(x => x.mandi === b.mandi && x.crop === b.crop).length;
+      supplyEl.textContent = `📊 ${count} other farmers are selling ${b.crop} at ${b.mandi} today.`;
+
+      document.getElementById('barcode-container').innerHTML = generateRealisticBarcodeHTML(b.token);
+      document.getElementById('barcode-hash-text').textContent = `*${b.token.toUpperCase()}-${b.id.substring(2)}*`;
+
+      updateTrackerStepsUI(b.status);
+    }
+
+    function updateTrackerStepsUI(status) {
+      const s1Icon = document.getElementById('step-1-icon');
+      const s2Icon = document.getElementById('step-2-icon');
+      const s3Icon = document.getElementById('step-3-icon');
+      const s2Sub = document.getElementById('step-2-sub');
+      const s3Sub = document.getElementById('step-3-sub');
+      const btnAnother = document.getElementById('btn-another');
+
+      if (status === 'BOOKED') {
+        s1Icon.className = "w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-sky-500 text-white border-sky-500 animate-pulse shadow-[0_0_15px_rgba(14,165,233,0.5)]";
+        s2Icon.className = "w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-white border-beige-200 text-stone-300";
+        s3Icon.className = "w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-white border-beige-200 text-stone-300";
+        if (s2Sub) s2Sub.classList.add('hidden');
+        if (s3Sub) s3Sub.classList.add('hidden');
+        btnAnother.classList.add('hidden');
+      } else if (status === 'WEIGHED') {
+        s1Icon.className = "w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-emerald-500 text-white border-emerald-500";
+        s2Icon.className = "w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-sky-500 text-white border-sky-500 animate-pulse shadow-[0_0_15px_rgba(14,165,233,0.5)]";
+        document.getElementById('step-2-text').textContent = "Crop Weighed & Approved";
+        if (s2Sub) { s2Sub.classList.remove('hidden'); s2Sub.textContent = "Awaiting bank payout..."; }
+        btnAnother.classList.add('hidden');
+      } else if (status === 'PAID') {
+        s1Icon.className = "w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-emerald-500 text-white border-emerald-500";
+        s2Icon.className = "w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-emerald-500 text-white border-emerald-500";
+        s3Icon.className = "w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-emerald-500 text-white border-emerald-500 animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.5)]";
+        document.getElementById('step-3-text').textContent = "Payment Disbursed via DBT";
+        if (s3Sub) { s3Sub.classList.remove('hidden'); s3Sub.textContent = "Successfully credited to bank."; }
+        btnAnother.classList.remove('hidden');
+      } else if (status === 'REJECTED') {
+        s2Icon.className = "w-14 h-14 rounded-full flex items-center justify-center border-4 z-10 transition-colors text-2xl bg-red-500 text-white border-red-500";
+        document.getElementById('step-2-text').textContent = "QC Failed (Rejected)";
+        if (s2Sub) { s2Sub.classList.remove('hidden'); s2Sub.textContent = "Moisture or quality criteria mismatch."; }
+        btnAnother.classList.remove('hidden');
+      }
+    }
+
+    function renderFarmerHistory(phone) {
+      const tbody = document.getElementById('farmer-history-tbody');
+      const userBookings = bookings.filter(b => b.phone === phone);
+      if (userBookings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="py-3 text-stone-400 text-center">No past bookings found.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = userBookings.map(b => `
+        <tr class="border-b border-beige-100 hover:bg-white cursor-pointer" onclick="openBookingTracker('${b.id}')">
+          <td class="py-2.5 font-mono font-bold text-sky-600">${b.token}</td>
+          <td class="py-2.5">${b.crop}</td>
+          <td class="py-2.5 font-bold">${b.qty} Kg</td>
+          <td class="py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-black ${b.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : b.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-sky-100 text-sky-800'}">${b.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function openBookingTracker(id) {
+      const b = bookings.find(x => x.id === id);
+      if (b) {
+        currentFarmerId = b.id;
+        farmerProfile.activeBookingId = b.id;
+        DB.saveSession(farmerProfile);
+        showView('view-farmer-tracker');
+        populateTrackerView(b);
+      }
+    }
+
+    function resetFarmerSession() {
+      if (farmerProfile) {
+        farmerProfile.activeBookingId = null;
+        DB.saveSession(farmerProfile);
+      }
+      currentFarmerId = null;
+      document.getElementById('f-qty').value = '';
+      showView('view-farmer-reg');
+    }
+
+    // Staff Authentication & Actions with Selected Workspace Mandi
+    function handleStaffAuth(e) {
+      e.preventDefault();
+      const selectedCenter = document.getElementById('staff-select-mandi').value;
+      const email = document.getElementById('staff-email').value.trim();
+      const pass = document.getElementById('staff-pass').value.trim();
+      
+      const workers = DB.getWorkers();
+      const worker = workers.find(w => w.email.toLowerCase() === email.toLowerCase() && w.key === pass);
+      
+      if (worker) {
+        staffProfile = { ...worker, center: selectedCenter }; // Bind selected workspace APMC
+        showView('view-admin');
+        showToast('Logged in as ' + worker.name + ' at ' + selectedCenter + ' APMC');
+      } else {
+        showToast('Invalid staff credentials. Try Demo button.');
+      }
+    }
+
+    function quickStaffDemoLogin() {
+      const selectedCenter = document.getElementById('staff-select-mandi').value || 'Gandhinagar';
+      const workers = DB.getWorkers();
+      staffProfile = { ...workers[0], center: selectedCenter };
+      showView('view-admin');
+      showToast('Quick Login: Inspector Dilip Varma (' + selectedCenter + ' APMC)');
+    }
+
+    function handleSuperAuth(e) {
+      e.preventDefault();
+      const market = document.getElementById('super-login-market').value;
+      const user = document.getElementById('super-user').value.trim();
+      const key = document.getElementById('super-key').value.trim();
+
+      if (!market) {
+        showToast('Please select a target APMC Market.');
+        return;
+      }
+      superAdminMarket = market;
+      showView('view-super-admin');
+      showToast('Super Admin Console Unlocked for ' + market + ' APMC');
+    }
+
+    function quickSuperDemoLogin() {
+      superAdminMarket = 'Gandhinagar';
+      document.getElementById('super-login-market').value = 'Gandhinagar';
+      document.getElementById('super-user').value = 'superadmin@agri.gujarat.gov.in';
+      document.getElementById('super-key').value = 'apmc@2026';
+      showView('view-super-admin');
+      showToast('Quick Super Admin Login: Gandhinagar APMC');
+    }
+
+    function handleStaffSignOut() {
+      staffProfile = null;
+      showView('view-admin-choice');
+      showToast('Signed out from administrative console.');
+    }
+
+    function updateAdminStats() {
+      bookings = DB.getBookings(); // Refresh local list from storage
+      const activeBookings = bookings.filter(b => staffProfile ? b.mandi === staffProfile.center : true);
+      const total = activeBookings.length;
+      const wait = activeBookings.filter(b => b.status === 'BOOKED').length;
+      const counter = activeBookings.filter(b => b.status === 'WEIGHED').length;
+      const paid = activeBookings.filter(b => b.status === 'PAID').length;
+
+      document.getElementById('a-total').textContent = total;
+      document.getElementById('a-wait').textContent = wait;
+      document.getElementById('a-counter').textContent = counter;
+      document.getElementById('a-paid').textContent = paid;
+
+      if (staffProfile) {
+        document.getElementById('admin-staff-name').textContent = staffProfile.name;
+        document.getElementById('admin-desk-badge').textContent = `📍 APMC ${staffProfile.center} Yard (${staffProfile.clearance})`;
+      }
+    }
+
+    function renderAdminQueueTable() {
+      bookings = DB.getBookings();
+      const filter = document.getElementById('admin-filter').value;
+      const tbody = document.getElementById('admin-tbody');
+      
+      let list = bookings.filter(b => staffProfile ? b.mandi === staffProfile.center : true);
+      if (filter !== 'All') {
+        list = list.filter(b => b.crop === filter);
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-stone-400 text-sm font-semibold">No queue tickets match this filter for ${staffProfile ? staffProfile.center : ''} APMC.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(b => `
+        <tr class="hover:bg-beige-50/60 transition-colors border-b border-beige-100">
+          <td class="p-4">
+            <div class="font-mono font-black text-sm text-stone-900">${b.token}</div>
+            <div class="text-[11px] font-bold text-sky-600">📍 ${b.mandi} APMC</div>
+          </td>
+          <td class="p-4">
+            <div class="font-bold text-stone-900 text-sm">${b.name}</div>
+            <div class="text-xs text-stone-500 font-semibold">${b.phone} &bull; <span class="text-stone-700">${b.crop} (${b.qty} Kg)</span></div>
+          </td>
+          <td class="p-4 text-sky-700 font-bold text-xs">
+            ~${b.estMins} mins
+          </td>
+          <td class="p-4">
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-black tracking-wide ${b.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : b.status === 'REJECTED' ? 'bg-red-100 text-red-800' : b.status === 'WEIGHED' ? 'bg-sky-100 text-sky-800' : 'bg-amber-100 text-amber-800'}">
+              ${b.status}
+            </span>
+          </td>
+          <td class="p-4 text-right space-x-1.5">
+            ${b.status === 'BOOKED' ? `
+              <button onclick="adminActionWeigh('${b.id}')" class="px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-sm">Call to Counter</button>
+              <button onclick="adminActionReject('${b.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-xs font-bold transition-colors cursor-pointer border border-red-200">Reject</button>
+            ` : b.status === 'WEIGHED' ? `
+              <button onclick="adminActionPay('${b.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-sm">Approve & Pay</button>
+              <button onclick="adminActionReject('${b.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-xs font-bold transition-colors cursor-pointer border border-red-200">Reject</button>
+            ` : `
+              <span class="text-xs font-bold text-stone-400">Completed</span>
+            `}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function adminActionWeigh(id) {
+      bookings = DB.getBookings();
+      const b = bookings.find(x => x.id === id);
+      if (b) {
+        b.status = 'WEIGHED';
+        DB.saveBookings(bookings);
+        updateAdminStats();
+        renderAdminQueueTable();
+        triggerSmsAlert(b.phone, `[KrishiSetu] Token ${b.token}: Your crop weighment was successful at ${b.mandi} APMC. Proceeding to DBT payment.`);
+        showToast(`Token ${b.token} marked as Weighed.`);
+      }
+    }
+
+    function adminActionReject(id) {
+      bookings = DB.getBookings();
+      const b = bookings.find(x => x.id === id);
+      if (b) {
+        b.status = 'REJECTED';
+        DB.saveBookings(bookings);
+        updateAdminStats();
+        renderAdminQueueTable();
+        triggerSmsAlert(b.phone, `[KrishiSetu] Token ${b.token}: QC inspection failed at ${b.mandi} APMC due to moisture/quality mismatch.`);
+        showToast(`Token ${b.token} rejected.`);
+      }
+    }
+
+    function adminActionPay(id) {
+      bookings = DB.getBookings();
+      const b = bookings.find(x => x.id === id);
+      if (b) {
+        b.status = 'PAID';
+        DB.saveBookings(bookings);
+        updateAdminStats();
+        renderAdminQueueTable();
+        triggerSmsAlert(b.phone, `[KrishiSetu] DBT payment successfully disbursed to your linked bank account for Token ${b.token}!`);
+        showToast(`DBT Payment disbursed for Token ${b.token}!`);
+      }
+    }
+
+    // Super Admin Dashboard Renderers with Market-Specific Sync
+    function setSuperHorizon(horizon) {
+      superHorizon = horizon;
+      ['day', 'week', 'season'].forEach(h => {
+        const btn = document.getElementById('btn-horizon-' + h);
+        if (btn) {
+          if (h === horizon) {
+            btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-black bg-stone-900 text-white shadow-sm transition-all cursor-pointer";
+          } else {
+            btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-black bg-beige-100 text-stone-700 hover:bg-beige-200 transition-all cursor-pointer";
+          }
+        }
+      });
+      renderSuperDashboard();
+    }
+
+    function switchSuperTab(tabId) {
+      const isProc = tabId === 'tab-procurement';
+      document.getElementById('tab-procurement').classList.toggle('hidden', !isProc);
+      document.getElementById('tab-workers').classList.toggle('hidden', isProc);
+
+      document.getElementById('super-tab-btn-procurement').className = isProc 
+        ? "px-6 py-4 font-black text-xs sm:text-sm border-b-2 border-amber-500 text-stone-900 flex items-center gap-2 cursor-pointer"
+        : "px-6 py-4 font-black text-xs sm:text-sm border-b-2 border-transparent text-stone-500 hover:text-stone-900 flex items-center gap-2 cursor-pointer";
+      
+      document.getElementById('super-tab-btn-workers').className = !isProc 
+        ? "px-6 py-4 font-black text-xs sm:text-sm border-b-2 border-amber-500 text-stone-900 flex items-center gap-2 cursor-pointer"
+        : "px-6 py-4 font-black text-xs sm:text-sm border-b-2 border-transparent text-stone-500 hover:text-stone-900 flex items-center gap-2 cursor-pointer";
+    }
+
+    function renderSuperDashboard() {
+      bookings = DB.getBookings(); // Always fetch latest bookings state
+      document.getElementById('super-active-market-label').textContent = superAdminMarket + " APMC";
+      
+      // Strictly filter bookings for the chosen Super Admin Market
+      const marketBookings = bookings.filter(b => b.mandi.toLowerCase() === superAdminMarket.toLowerCase());
+      const paidBookings = marketBookings.filter(b => b.status === 'PAID');
+      const rejectedCount = marketBookings.filter(b => b.status === 'REJECTED').length;
+
+      const totalQty = paidBookings.reduce((acc, curr) => acc + curr.qty, 0);
+      const totalVal = paidBookings.reduce((acc, curr) => acc + curr.payout, 0);
+
+      document.getElementById('sup-gross-qty').textContent = totalQty.toLocaleString();
+      document.getElementById('sup-gross-val').textContent = totalVal.toLocaleString();
+      document.getElementById('sup-rejections-count').textContent = rejectedCount;
+
+      const workers = DB.getWorkers().filter(w => w.center.toLowerCase() === superAdminMarket.toLowerCase());
+      document.getElementById('sup-workers-count').textContent = workers.length;
+
+      // Crop breakdown render
+      const cropMap = {};
+      paidBookings.forEach(b => {
+        cropMap[b.crop] = (cropMap[b.crop] || 0) + b.qty;
+      });
+
+      const breakdownEl = document.getElementById('sup-crop-breakdown');
+      const keys = Object.keys(cropMap);
+      if (keys.length === 0) {
+        breakdownEl.innerHTML = `<p class="text-stone-400 text-xs">No settled procurement records for ${superAdminMarket} market yet.</p>`;
+      } else {
+        breakdownEl.innerHTML = keys.map(crop => {
+          const qty = cropMap[crop];
+          const pct = totalQty > 0 ? Math.round((qty / totalQty) * 100) : 0;
+          return `
+            <div>
+              <div class="flex justify-between mb-1 text-stone-700"><span>${crop}</span><span>${qty} Kg (${pct}%)</span></div>
+              <div class="w-full bg-beige-200 h-2 rounded-full overflow-hidden"><div class="bg-amber-500 h-full rounded-full" style="width: ${pct}%"></div></div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Ledger render - Hidden Payout Amounts and Ledger status tracking
+      const ledgerTbody = document.getElementById('sup-ledger-tbody');
+      document.getElementById('sup-ledger-count').textContent = marketBookings.length + " records";
+      if (marketBookings.length === 0) {
+        ledgerTbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-stone-400">No transactions recorded for ${superAdminMarket} APMC.</td></tr>`;
+      } else {
+        ledgerTbody.innerHTML = marketBookings.map(b => `
+          <tr class="border-b border-beige-100">
+            <td class="p-3 font-mono font-bold text-stone-900">${b.token}</td>
+            <td class="p-3 font-bold">${b.name}</td>
+            <td class="p-3">${b.crop} (${b.qty} Kg)</td>
+            <td class="p-3 font-bold text-stone-600 italic">Hidden / Direct DBT</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-black ${b.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : b.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-sky-100 text-sky-800'}">${b.status}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // Workers Table
+      const workersTbody = document.getElementById('sup-workers-tbody');
+      workersTbody.innerHTML = workers.map(w => `
+        <tr class="border-b border-beige-100">
+          <td class="p-4"><div class="font-bold text-stone-900">${w.name}</div><div class="text-[11px] text-stone-500 font-mono">${w.id}</div></td>
+          <td class="p-4 text-stone-600">${w.email}</td>
+          <td class="p-4 font-bold text-sky-700">${w.clearance}</td>
+          <td class="p-4 font-mono font-bold text-amber-700">${w.key}</td>
+          <td class="p-4 text-right"><span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black">${w.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // SMS Notifications
+    function triggerSmsAlert(phone, message) {
+      if (!phone) return;
+      document.getElementById('sms-banner-phone').textContent = "+91 " + phone;
+      document.getElementById('sms-banner-body').textContent = message;
+      
+      const banner = document.getElementById('sms-incoming-banner');
+      banner.classList.remove('-translate-y-64', 'opacity-0', 'pointer-events-none');
+      banner.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        dismissSmsPopup();
+      }, 7000);
+    }
+
+    function dismissSmsPopup() {
+      const banner = document.getElementById('sms-incoming-banner');
+      banner.classList.remove('translate-y-0', 'opacity-100');
+      banner.classList.add('-translate-y-64', 'opacity-0', 'pointer-events-none');
+    }
+
+    function openSmsInbox() {
+      triggerSmsAlert(farmerProfile ? farmerProfile.phone : "9825144320", "[KrishiSetu Mandi Alert] System active. All APMC gate queues synchronized in real-time.");
+    }
+
+    // Elder Mode & Toast
+    function toggleElderMode() {
+      isElderMode = !isElderMode;
+      document.body.classList.toggle('elder-mode', isElderMode);
+      showToast(isElderMode ? 'Elder Mode Enabled (High Contrast & Large Text)' : 'Standard Mode Enabled');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = msg;
+      toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
